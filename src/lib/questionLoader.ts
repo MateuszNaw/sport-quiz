@@ -25,6 +25,9 @@ import baseballMedium from "@/data/questions/baseball-medium.json";
 import baseballHard from "@/data/questions/baseball-hard.json";
 import hockeyEasy from "@/data/questions/hockey-easy.json";
 import hockeyMedium from "@/data/questions/hockey-medium.json";
+import hockeyHard from "@/data/questions/hockey-hard.json";
+import cricketEasy from "@/data/questions/cricket-easy.json";
+import cricketMedium from "@/data/questions/cricket-medium.json";
 
 type Bucket = Partial<Record<Sport, Partial<Record<Difficulty, StaticEntry[]>>>>;
 
@@ -52,6 +55,11 @@ const STATIC_QUESTIONS: Bucket = {
   hockey: {
     easy: hockeyEasy as StaticEntry[],
     medium: hockeyMedium as StaticEntry[],
+    hard: hockeyHard as StaticEntry[],
+  },
+  cricket: {
+    easy: cricketEasy as StaticEntry[],
+    medium: cricketMedium as StaticEntry[],
     // no hard set yet — pickFromStatic falls back to easier difficulties, then null
   },
 };
@@ -90,13 +98,18 @@ export function pickFromStatic(
   sport: Sport,
   difficulty: Difficulty,
   quizType?: QuizType,
-  exclude: string[] = []
+  exclude: string[] = [],
+  sessionExclude: string[] = []
 ): Question | null {
   const bySport = STATIC_QUESTIONS[sport];
   if (!bySport) return null;
 
   const excluded = new Set(exclude.map((e) => e.toLowerCase()));
+  // Questions asked earlier in this same game must never repeat, even in the
+  // relaxed "allow repeats" tiers (which only relax the historical seen list).
+  const thisRun = new Set(sessionExclude.map((e) => e.toLowerCase()));
   const notAsked = (q: StaticEntry) => !excluded.has(entryKey(q).toLowerCase());
+  const notThisRun = (q: StaticEntry) => !thisRun.has(entryKey(q).toLowerCase());
 
   // Prefer the exact difficulty, then fall back to whichever difficulties
   // we do have a file for (so e.g. missing hockey-hard still returns
@@ -126,7 +139,7 @@ export function pickFromStatic(
 
   for (const tier of tiers) {
     for (const p of pools) {
-      const candidates = tier(p);
+      const candidates = tier(p).filter(notThisRun);
       if (candidates.length > 0) {
         const chosen = shuffle(candidates)[0];
         return {

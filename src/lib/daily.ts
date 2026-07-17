@@ -38,10 +38,13 @@ export async function buildDailyQuestions(date = utcDateString()): Promise<{
 
   for (let i = 0; i < DAILY_LENGTH; i++) {
     const sport = pickSeeded([...SPORTS], rand) as Sport;
+    // Pass the pack's own keys as sessionExclude too, so the pickers'
+    // "allow repeats" fallback tiers can't put the same question in
+    // today's set twice.
     let q =
-      (await pickFromMongo(sport, difficulty, undefined, exclude)) ??
-      pickFromStatic(sport, difficulty, undefined, exclude) ??
-      pickFromBank(sport, difficulty, undefined, exclude);
+      (await pickFromMongo(sport, difficulty, undefined, exclude, exclude)) ??
+      pickFromStatic(sport, difficulty, undefined, exclude, exclude) ??
+      pickFromBank(sport, difficulty, undefined, exclude, exclude);
 
     // Stabilize id from date+index so clients can resume consistently.
     const key = questionExcludeKey(q);

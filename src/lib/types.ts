@@ -97,6 +97,11 @@ export interface GenerateQuestionRequest {
   quizType?: QuizType;
   /** Prompts of recently asked questions, so the generator avoids repeats. */
   exclude?: string[];
+  /**
+   * Questions already asked in the current game. Unlike `exclude` (a soft
+   * preference relaxed when the pool runs dry), these must never repeat.
+   */
+  sessionExclude?: string[];
   /** Prefer this sport more often (favorites personalization). */
   preferSport?: Sport;
 }

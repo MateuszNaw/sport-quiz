@@ -373,32 +373,45 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function entryKey(q: BankEntry): string {
+  return (
+    "prompt" in q ? q.prompt : "statement" in q ? q.statement : "fixture" in q ? q.fixture : q.answer
+  ).toLowerCase();
+}
+
 /**
  * Pick a bank question, preferring exact sport+difficulty+type match and
  * progressively relaxing constraints so we always return something.
+ *
+ * The requested sport is never relaxed — serving a different sport than the
+ * one the player picked is worse than repeating a question. `sessionExclude`
+ * (questions already asked this game) is only relaxed as an absolute last
+ * resort, while `exclude` (historical seen) is relaxed once the unseen pool
+ * for the sport runs out.
  */
 export function pickFromBank(
   sport: Sport,
   difficulty: Difficulty,
   quizType?: QuizType,
-  exclude: string[] = []
+  exclude: string[] = [],
+  sessionExclude: string[] = []
 ): Question {
   const excluded = new Set(exclude.map((e) => e.toLowerCase()));
-  const notAsked = (q: BankEntry) => {
-    const key =
-      "prompt" in q ? q.prompt : "statement" in q ? q.statement : "fixture" in q ? q.fixture : q.answer;
-    return !excluded.has(key.toLowerCase());
-  };
+  const thisRun = new Set(sessionExclude.map((e) => e.toLowerCase()));
+  const notAsked = (q: BankEntry) => !excluded.has(entryKey(q));
+  const notThisRun = (q: BankEntry) => !thisRun.has(entryKey(q));
 
   const tiers: ((q: BankEntry) => boolean)[] = [
-    (q) => q.sport === sport && q.difficulty === difficulty && (!quizType || q.quizType === quizType),
-    (q) => q.sport === sport && (!quizType || q.quizType === quizType),
-    (q) => q.sport === sport,
+    (q) => q.difficulty === difficulty && (!quizType || q.quizType === quizType) && notAsked(q),
+    (q) => (!quizType || q.quizType === quizType) && notAsked(q),
+    (q) => notAsked(q),
+    // Historical repeats are OK once everything has been seen, but never
+    // repeat a question from the current game.
     () => true,
   ];
 
   for (const tier of tiers) {
-    const candidates = BANK.filter((q) => tier(q) && notAsked(q));
+    const candidates = BANK.filter((q) => q.sport === sport && tier(q) && notThisRun(q));
     if (candidates.length > 0) {
       const chosen = shuffle(candidates)[0];
       return {
@@ -408,7 +421,7 @@ export function pickFromBank(
       } as Question;
     }
   }
-  // Every question was excluded — allow repeats rather than failing.
-  const chosen = shuffle(BANK.filter((q) => q.sport === sport))[0] ?? shuffle([...BANK])[0];
+  // The sport's entire bank was asked this very game — repeat rather than fail.
+  const chosen = shuffle(BANK.filter((q) => q.sport === sport))[0];
   return { ...chosen, id: crypto.randomUUID(), source: "bank" } as Question;
 }

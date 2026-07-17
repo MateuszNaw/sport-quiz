@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { sport, difficulty, exclude = [] } = body;
+  const { sport, difficulty, exclude = [], sessionExclude = [] } = body;
   if (!SPORTS.includes(sport)) {
     return NextResponse.json(
       { error: `sport must be one of: ${SPORTS.join(", ")}` },
@@ -60,8 +60,8 @@ export async function POST(req: Request) {
   const mergedExclude = [...new Set([...exclude, ...seen].map((e) => e.toLowerCase()))];
 
   let question =
-    (await pickFromMongo(sport, difficulty, quizType, mergedExclude)) ??
-    pickFromStatic(sport, difficulty, quizType, mergedExclude);
+    (await pickFromMongo(sport, difficulty, quizType, mergedExclude, sessionExclude)) ??
+    pickFromStatic(sport, difficulty, quizType, mergedExclude, sessionExclude);
 
   if (!question && isAiConfigured()) {
     try {
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   }
 
   if (!question) {
-    question = pickFromBank(sport, difficulty, quizType, mergedExclude);
+    question = pickFromBank(sport, difficulty, quizType, mergedExclude, sessionExclude);
   }
 
   if (sessionUser) {

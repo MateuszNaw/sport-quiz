@@ -70,21 +70,28 @@ async function sampleOne(filter: Record<string, unknown>): Promise<QuestionDoc |
 /**
  * Pick a curated question from MongoDB. Prefers questions whose excludeKey is
  * not in `exclude` (session + per-user seen). Only after the unseen pool for
- * this sport is exhausted does it allow repeats.
+ * this sport is exhausted does it allow repeats. `sessionExclude` (questions
+ * already asked in the current game) is never relaxed, so the same question
+ * can't appear twice in one game.
  */
 export async function pickFromMongo(
   sport: Sport,
   difficulty: Difficulty,
   quizType?: QuizType,
-  exclude: string[] = []
+  exclude: string[] = [],
+  sessionExclude: string[] = []
 ): Promise<Question | null> {
   if (!(await isMongoConfigured())) return null;
 
   try {
-    const excluded = [...new Set(exclude.map((e) => e.toLowerCase()).filter(Boolean))];
+    const thisRun = [...new Set(sessionExclude.map((e) => e.toLowerCase()).filter(Boolean))];
+    const excluded = [
+      ...new Set([...exclude, ...sessionExclude].map((e) => e.toLowerCase()).filter(Boolean)),
+    ];
     const withExclude = excluded.length > 0;
 
-    // Unseen first (tighten → relax sport/difficulty/type), then allow repeats.
+    // Unseen first (tighten → relax difficulty/type, never the sport), then
+    // allow historical repeats — but never a repeat from the current game.
     const baseFilters: Record<string, unknown>[] = [
       { sport, difficulty, ...(quizType ? { quizType } : {}) },
       { sport, difficulty },
@@ -96,7 +103,9 @@ export async function pickFromMongo(
       ...(withExclude
         ? baseFilters.map((f) => ({ ...f, excludeKey: { $nin: excluded } }))
         : []),
-      ...baseFilters,
+      ...baseFilters.map((f) =>
+        thisRun.length > 0 ? { ...f, excludeKey: { $nin: thisRun } } : f
+      ),
     ];
 
     for (const filter of filters) {

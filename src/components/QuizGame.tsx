@@ -144,6 +144,9 @@ export default function QuizGame({
   const [shareStatus, setShareStatus] = useState<"idle" | "share-copied" | "challenge-copied">("idle");
   const [dailyPack, setDailyPack] = useState<Question[] | null>(null);
   const askedRef = useRef<string[]>([]);
+  // Keys asked in the current game only — the server must never repeat these,
+  // even when the whole historical seen list has to be relaxed.
+  const runAskedRef = useRef<string[]>([]);
   const submittedRef = useRef(false);
   const shownAtRef = useRef<number>(0);
 
@@ -223,6 +226,7 @@ export default function QuizGame({
             sport,
             difficulty,
             exclude: askedRef.current,
+            sessionExclude: runAskedRef.current,
             preferSport: favorite ?? undefined,
           }),
         });
@@ -233,6 +237,7 @@ export default function QuizGame({
         const data = (await res.json()) as { question: Question };
         const key = questionKey(data.question).toLowerCase();
         askedRef.current = [...new Set([...askedRef.current, key])].slice(-MAX_LOCAL_SEEN);
+        runAskedRef.current = [...new Set([...runAskedRef.current, key])];
         rememberLocalSeen(key);
         setQuestion(data.question);
         shownAtRef.current = Date.now();
@@ -368,6 +373,7 @@ export default function QuizGame({
     setNewlyUnlocked([]);
     submittedRef.current = false;
     askedRef.current = loadLocalSeen();
+    runAskedRef.current = [];
     if (isDaily && dailyPack?.[0]) {
       setQuestion(dailyPack[0]);
       shownAtRef.current = Date.now();
@@ -611,7 +617,13 @@ export default function QuizGame({
               )}
             </div>
 
-            <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 animate-rise">
+            {/* Keyed by question id so consecutive questions of the same type
+                remount with fresh state instead of inheriting the previous
+                answer (which left the round stuck with no way to proceed). */}
+            <div
+              key={question.id}
+              className="rounded-2xl border border-border bg-surface p-6 sm:p-8 animate-rise"
+            >
               {question.quizType === "multiple-choice" && (
                 <MultipleChoice question={question} onAnswer={handleAnswer} />
               )}
