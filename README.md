@@ -16,11 +16,14 @@ A Next.js sports trivia game. Before every question you pick one of **3 randomly
 
 ```bash
 npm install
-cp .env.example .env.local   # add your ANTHROPIC_API_KEY (optional)
+cp .env.example .env.local   # set MONGODB_URI (required); ANTHROPIC_API_KEY optional
+npm run seed                 # upload curated questions into MongoDB
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Users, stats, leagues, and the question bank live in MongoDB Atlas (`sportiq` database by default). Keep secrets in `.env.local` — it is gitignored.
 
 ## API
 

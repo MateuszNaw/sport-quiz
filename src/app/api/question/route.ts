@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateWithAi, isAiConfigured } from "@/lib/generate";
 import { pickFromBank } from "@/lib/questionBank";
+import { pickFromMongo } from "@/lib/questionDb";
 import { pickFromStatic } from "@/lib/questionLoader";
 import {
   DIFFICULTIES,
@@ -15,8 +16,8 @@ export const runtime = "nodejs";
 /**
  * POST /api/question
  * Body: { sport, difficulty, quizType?, exclude?: string[] }
- * Returns a generated Question. Uses the Anthropic API when configured,
- * otherwise (or on failure) falls back to the local question bank.
+ * Prefer MongoDB curated questions, then local JSON banks, then AI, then
+ * the tiny hardcoded fallback bank.
  */
 export async function POST(req: Request) {
   let body: GenerateQuestionRequest;
@@ -49,8 +50,11 @@ export async function POST(req: Request) {
   const quizType: QuizType =
     body.quizType ?? QUIZ_TYPES[Math.floor(Math.random() * QUIZ_TYPES.length)];
 
-  // Prefer the curated static question sets (hundreds of hand-checked
-  // questions per sport/difficulty) — no API cost and no hallucination risk.
+  const mongoQuestion = await pickFromMongo(sport, difficulty, quizType, exclude);
+  if (mongoQuestion) {
+    return NextResponse.json({ question: mongoQuestion });
+  }
+
   const staticQuestion = pickFromStatic(sport, difficulty, quizType, exclude);
   if (staticQuestion) {
     return NextResponse.json({ question: staticQuestion });
@@ -65,7 +69,6 @@ export async function POST(req: Request) {
     }
   }
 
-  // Last resort: tiny hardcoded bank, covers sports without a static set yet.
   const question = pickFromBank(sport, difficulty, quizType, exclude);
   return NextResponse.json({ question });
 }

@@ -1,5 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
 import {
   emptyProfile,
   emptyStats,
@@ -12,14 +10,11 @@ import {
   type UserProfileFields,
   type UserStats,
 } from "./models";
+import { getDb } from "./mongodb";
 
 /**
- * Tiny JSON-file "database" for the hackathon build. Good enough for a
- * single-instance demo: no external services required, but not meant for
- * concurrent production traffic.
+ * MongoDB-backed store for accounts, stats, and leagues.
  */
-
-const DB_PATH = path.join(process.cwd(), ".data", "sportiq-db.json");
 
 export interface UserRecord {
   username: string;
@@ -31,36 +26,20 @@ export interface UserRecord {
   history: HistoryEntry[];
 }
 
-interface Database {
-  users: Record<string, UserRecord>;
-  leagues: Record<string, LeagueRecord>;
+interface UserDoc extends UserRecord {
+  _id: string;
 }
 
-function emptyDb(): Database {
-  return { users: {}, leagues: {} };
+interface LeagueDoc extends LeagueRecord {
+  _id: string;
 }
 
-let cache: Database | null = null;
-let writeQueue: Promise<void> = Promise.resolve();
-
-async function readDb(): Promise<Database> {
-  if (cache) return cache;
-  try {
-    const raw = await fs.readFile(DB_PATH, "utf-8");
-    cache = JSON.parse(raw) as Database;
-  } catch {
-    cache = emptyDb();
-  }
-  return cache;
+async function users() {
+  return (await getDb()).collection<UserDoc>("users");
 }
 
-function writeDb(db: Database): Promise<void> {
-  cache = db;
-  writeQueue = writeQueue.then(async () => {
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2), "utf-8");
-  });
-  return writeQueue;
+async function leagues() {
+  return (await getDb()).collection<LeagueDoc>("leagues");
 }
 
 export function toPublicUser(user: UserRecord): PublicUser {
@@ -68,13 +47,19 @@ export function toPublicUser(user: UserRecord): PublicUser {
   return { username, createdAt, profile, stats, achievements, history };
 }
 
+function stripId<T extends { _id?: string }>(doc: T): Omit<T, "_id"> {
+  const { _id: _unused, ...rest } = doc;
+  void _unused;
+  return rest;
+}
+
 export async function getUser(username: string): Promise<UserRecord | null> {
-  const db = await readDb();
-  return db.users[username.toLowerCase()] ?? null;
+  const col = await users();
+  const doc = await col.findOne({ _id: username.toLowerCase() });
+  return doc ? (stripId(doc) as UserRecord) : null;
 }
 
 export async function createUser(username: string, passwordHash: string): Promise<UserRecord> {
-  const db = await readDb();
   const key = username.toLowerCase();
   const record: UserRecord = {
     username,
@@ -85,8 +70,8 @@ export async function createUser(username: string, passwordHash: string): Promis
     achievements: [],
     history: [],
   };
-  db.users[key] = record;
-  await writeDb(db);
+  const col = await users();
+  await col.insertOne({ _id: key, ...record });
   return record;
 }
 
@@ -95,12 +80,13 @@ export async function updateUser(
   username: string,
   mutate: (user: UserRecord) => void
 ): Promise<UserRecord | null> {
-  const db = await readDb();
+  const col = await users();
   const key = username.toLowerCase();
-  const user = db.users[key];
-  if (!user) return null;
+  const doc = await col.findOne({ _id: key });
+  if (!doc) return null;
+  const user = stripId(doc) as UserRecord;
   mutate(user);
-  await writeDb(db);
+  await col.replaceOne({ _id: key }, { _id: key, ...user } as UserDoc);
   return user;
 }
 
@@ -109,9 +95,9 @@ function generateLeagueCode(): string {
 }
 
 export async function createLeague(name: string, ownerUsername: string): Promise<LeagueRecord> {
-  const db = await readDb();
+  const col = await leagues();
   let code = generateLeagueCode();
-  while (db.leagues[code]) code = generateLeagueCode();
+  while (await col.findOne({ _id: code })) code = generateLeagueCode();
   const league: LeagueRecord = {
     code,
     name,
@@ -122,30 +108,33 @@ export async function createLeague(name: string, ownerUsername: string): Promise
     comments: [],
     reactions: [],
   };
-  db.leagues[code] = league;
-  await writeDb(db);
+  await col.insertOne({ _id: code, ...league });
   return league;
 }
 
 export async function getLeague(code: string): Promise<LeagueRecord | null> {
-  const db = await readDb();
-  return db.leagues[code.toUpperCase()] ?? null;
+  const col = await leagues();
+  const doc = await col.findOne({ _id: code.toUpperCase() });
+  return doc ? (stripId(doc) as LeagueRecord) : null;
 }
 
 export async function getLeaguesForUser(username: string): Promise<LeagueRecord[]> {
-  const db = await readDb();
-  return Object.values(db.leagues).filter((l) => l.members.includes(username));
+  const col = await leagues();
+  const docs = await col.find({ members: username }).toArray();
+  return docs.map((d) => stripId(d) as LeagueRecord);
 }
 
 export async function updateLeague(
   code: string,
   mutate: (league: LeagueRecord) => void
 ): Promise<LeagueRecord | null> {
-  const db = await readDb();
-  const league = db.leagues[code.toUpperCase()];
-  if (!league) return null;
+  const col = await leagues();
+  const key = code.toUpperCase();
+  const doc = await col.findOne({ _id: key });
+  if (!doc) return null;
+  const league = stripId(doc) as LeagueRecord;
   mutate(league);
-  await writeDb(db);
+  await col.replaceOne({ _id: key }, { _id: key, ...league } as LeagueDoc);
   return league;
 }
 
