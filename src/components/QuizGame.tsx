@@ -49,6 +49,30 @@ interface UnlockedAchievement {
 }
 
 const LAST_RESULT_KEY = "sportiq:lastResult";
+const SEEN_STORAGE_KEY = "sportiq:seenQuestions";
+const MAX_LOCAL_SEEN = 500;
+
+function loadLocalSeen(): string[] {
+  try {
+    const raw = window.localStorage.getItem(SEEN_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.filter((k): k is string => typeof k === "string").map((k) => k.toLowerCase())
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberLocalSeen(key: string) {
+  try {
+    const next = [...new Set([...loadLocalSeen(), key.toLowerCase()])].slice(-MAX_LOCAL_SEEN);
+    window.localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // ignore quota / private mode
+  }
+}
 
 function randomThreeSports(): Sport[] {
   const pool = [...SPORTS];
@@ -103,6 +127,12 @@ export default function QuizGame({
   const submittedRef = useRef(false);
 
   useEffect(() => {
+    // Seed session exclude with locally remembered questions (guests + signed-in
+    // backup). Server also excludes per-user seenQuestions when signed in.
+    askedRef.current = loadLocalSeen();
+  }, []);
+
+  useEffect(() => {
     // Randomize once on the client only; Math.random() during the initial
     // render would mismatch between server and client HTML.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -128,7 +158,9 @@ export default function QuizGame({
           throw new Error(body?.error ?? `Request failed (${res.status})`);
         }
         const data = (await res.json()) as { question: Question };
-        askedRef.current = [...askedRef.current.slice(-19), questionKey(data.question)];
+        const key = questionKey(data.question).toLowerCase();
+        askedRef.current = [...new Set([...askedRef.current, key])].slice(-MAX_LOCAL_SEEN);
+        rememberLocalSeen(key);
         setQuestion(data.question);
         setPhase("question");
       } catch (e) {

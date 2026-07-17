@@ -25,23 +25,17 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function questionExcludeKey(q: {
-  quizType: QuizType;
-  prompt?: string;
-  statement?: string;
-  fixture?: string;
-  answer?: string;
-}): string {
+export function questionExcludeKey(q: Question): string {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
-      return (q.prompt ?? "").toLowerCase();
+      return q.prompt.toLowerCase();
     case "true-false":
-      return (q.statement ?? "").toLowerCase();
+      return q.statement.toLowerCase();
     case "guess-score":
-      return (q.fixture ?? "").toLowerCase();
+      return q.fixture.toLowerCase();
     case "guess-player":
-      return (q.answer ?? "").toLowerCase();
+      return q.answer.toLowerCase();
   }
 }
 
@@ -53,9 +47,28 @@ async function questions() {
   return (await getDb()).collection<QuestionDoc>("questions");
 }
 
+async function sampleOne(filter: Record<string, unknown>): Promise<QuestionDoc | null> {
+  const col = await questions();
+  // Prefer $sample when the exclude list is large — scanning 80 docs can miss
+  // the remaining unseen pool. Fall back to a limited find + shuffle.
+  const excluded = filter.excludeKey as { $nin?: string[] } | undefined;
+  const ninSize = excluded?.$nin?.length ?? 0;
+
+  if (ninSize > 40) {
+    const pipeline = [{ $match: filter }, { $sample: { size: 1 } }];
+    const rows = await col.aggregate<QuestionDoc>(pipeline).toArray();
+    return rows[0] ?? null;
+  }
+
+  const pool = await col.find(filter).limit(120).toArray();
+  if (pool.length === 0) return null;
+  return shuffle(pool)[0];
+}
+
 /**
- * Pick a curated question from MongoDB. Returns null if Mongo isn't configured
- * or the questions collection is empty / has no match for this sport.
+ * Pick a curated question from MongoDB. Prefers questions whose excludeKey is
+ * not in `exclude` (session + per-user seen). Only after the unseen pool for
+ * this sport is exhausted does it allow repeats.
  */
 export async function pickFromMongo(
   sport: Sport,
@@ -66,21 +79,27 @@ export async function pickFromMongo(
   if (!(await isMongoConfigured())) return null;
 
   try {
-    const col = await questions();
-    const excluded = exclude.map((e) => e.toLowerCase());
+    const excluded = [...new Set(exclude.map((e) => e.toLowerCase()).filter(Boolean))];
+    const withExclude = excluded.length > 0;
 
-    const filters: Record<string, unknown>[] = [
-      { sport, difficulty, ...(quizType ? { quizType } : {}), ...(excluded.length ? { excludeKey: { $nin: excluded } } : {}) },
+    // Unseen first (tighten → relax sport/difficulty/type), then allow repeats.
+    const baseFilters: Record<string, unknown>[] = [
       { sport, difficulty, ...(quizType ? { quizType } : {}) },
-      { sport, ...(quizType ? { quizType } : {}), ...(excluded.length ? { excludeKey: { $nin: excluded } } : {}) },
+      { sport, difficulty },
       { sport, ...(quizType ? { quizType } : {}) },
       { sport },
     ];
 
+    const filters: Record<string, unknown>[] = [
+      ...(withExclude
+        ? baseFilters.map((f) => ({ ...f, excludeKey: { $nin: excluded } }))
+        : []),
+      ...baseFilters,
+    ];
+
     for (const filter of filters) {
-      const pool = await col.find(filter).limit(80).toArray();
-      if (pool.length === 0) continue;
-      const chosen = shuffle(pool)[0];
+      const chosen = await sampleOne(filter);
+      if (!chosen) continue;
       return {
         ...chosen.body,
         id: crypto.randomUUID(),

@@ -1,63 +1,66 @@
 @import "tailwindcss";
 
 /*
-  Brand palette (Sportradar):
-    #0B2D72  deep navy   — primary text / ink
-    #0992C2  vivid blue  — primary action
-    #0AC4E0  bright cyan — secondary accent / glow
-    #F6E7BC  warm cream  — soft highlight / background warmth
+  Brand system (Sportradar-aware, less blue-heavy):
+    Ink text     — near-black charcoal (readable, not navy-on-everything)
+    Brand navy   — logo / wordmark only
+    Action cyan  — primary CTAs only
+    Cream        — working surface color (chips, bands, inputs), not just a wash
 */
 
 :root {
-  --background: #faf7ef;
-  --foreground: #0b2d72;
+  --background: #f3efe6;
+  --foreground: #171c24;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-press: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Surfaces — light, warm canvas with crisp white cards */
-  --color-ink: #faf7ef;
-  --color-surface: #ffffff;
-  --color-surface-2: #eaf6fa;
-  --color-border: rgba(11, 45, 114, 0.12);
-  --color-border-soft: rgba(11, 45, 114, 0.08);
+  /* Canvas & cards */
+  --color-ink: #f3efe6;
+  --color-surface: #fffcf7;
+  --color-surface-2: #efe4c8;
+  --color-border: rgba(23, 28, 36, 0.1);
+  --color-border-soft: rgba(23, 28, 36, 0.06);
 
-  /* Text */
-  --color-paper: #0b2d72;
-  --color-mute: #4c5d85;
-  --color-faint: #93a0c2;
+  /* Text — charcoal, not navy */
+  --color-paper: #171c24;
+  --color-mute: #5a6170;
+  --color-faint: #8b919e;
 
-  /* One locked accent family, used identically everywhere */
+  /* Brand accents */
+  --color-brand: #0b2d72;
   --color-accent: #0992c2;
   --color-accent-dim: #0aa8d1;
   --color-accent-2: #0ac4e0;
   --color-accent-ink: #ffffff;
   --color-cream: #f6e7bc;
 
-  /* Semantic difficulty scale (functional, not decorative) */
-  --color-easy: #16a06b;
-  --color-medium: #c58a1e;
-  --color-hard: #d64550;
+  /* Difficulty */
+  --color-easy: #1a9a6a;
+  --color-medium: #c47a12;
+  --color-hard: #c93b48;
 
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-space-grotesk);
   --font-mono: var(--font-geist-mono);
 
-  --animate-rise: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-pop: pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-rise: rise 0.42s var(--ease-out) both;
+  --animate-pop: pop 0.22s var(--ease-out) both;
   --animate-shake: shake 0.4s ease-in-out;
   --animate-pulse-soft: pulse-soft 2.2s ease-in-out infinite;
   --animate-float: float 5s ease-in-out infinite;
-  --animate-drift: drift 22s ease-in-out infinite;
-  --animate-shimmer: shimmer 2.6s linear infinite;
-  --animate-gradient-pan: gradient-pan 6s ease infinite;
+  --animate-shimmer: shimmer 2.8s linear infinite;
+  --animate-gradient-pan: gradient-pan 7s var(--ease-in-out) infinite;
 
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -67,7 +70,7 @@
   @keyframes pop {
     from {
       opacity: 0;
-      transform: scale(0.92);
+      transform: scale(0.96);
     }
     to {
       opacity: 1;
@@ -101,19 +104,7 @@
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-6px);
-    }
-  }
-  @keyframes drift {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-    33% {
-      transform: translate(3%, -4%) scale(1.08);
-    }
-    66% {
-      transform: translate(-3%, 3%) scale(0.96);
+      transform: translateY(-5px);
     }
   }
   @keyframes shimmer {
@@ -136,7 +127,7 @@
   @keyframes intro-in {
     from {
       opacity: 0;
-      transform: scale(0.82) translateY(12px);
+      transform: scale(0.95) translateY(10px);
     }
     to {
       opacity: 1;
@@ -154,28 +145,28 @@
   @keyframes blob-drift-a {
     0%,
     100% {
-      transform: translate(-10%, -8%) scale(1);
+      transform: translate(-8%, -6%) scale(1);
     }
     50% {
-      transform: translate(8%, 6%) scale(1.15);
+      transform: translate(6%, 5%) scale(1.1);
     }
   }
   @keyframes blob-drift-b {
     0%,
     100% {
-      transform: translate(10%, 6%) scale(1);
+      transform: translate(8%, 4%) scale(1);
     }
     50% {
-      transform: translate(-6%, -10%) scale(1.2);
+      transform: translate(-5%, -8%) scale(1.12);
     }
   }
   @keyframes blob-drift-c {
     0%,
     100% {
-      transform: translate(0, 10%) scale(1.05);
+      transform: translate(0, 8%) scale(1.02);
     }
     50% {
-      transform: translate(-8%, -4%) scale(0.9);
+      transform: translate(-6%, -3%) scale(0.94);
     }
   }
 }
@@ -190,7 +181,11 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Fixed, pointer-events-none brand-wash background layer. Sits behind all page content. */
+.font-display {
+  font-family: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Warm field: cream + soft pitch wash, cyan kept quiet */
 .field-texture {
   position: fixed;
   inset: 0;
@@ -198,9 +193,11 @@ body {
   pointer-events: none;
   overflow: hidden;
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(11, 45, 114, 0.06) 1px, transparent 0);
-  background-size: 26px 26px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 80%);
+    radial-gradient(ellipse 90% 55% at 12% -5%, rgba(246, 231, 188, 0.9), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 92% 8%, rgba(9, 146, 194, 0.1), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 70% 95%, rgba(26, 154, 106, 0.08), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(23, 28, 36, 0.045) 1px, transparent 0);
+  background-size: auto, auto, auto, 28px 28px;
 }
 
 .field-texture::before,
@@ -208,43 +205,43 @@ body {
 .field-texture .blob-c {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
-  opacity: 0.35;
+  filter: blur(80px);
+  opacity: 0.45;
 }
 
 .field-texture::before {
   content: "";
-  top: -12%;
-  left: -8%;
-  width: 46vmax;
-  height: 46vmax;
-  background: radial-gradient(circle, var(--color-accent-2), transparent 70%);
-  animation: blob-drift-a 24s ease-in-out infinite;
+  top: -18%;
+  left: -12%;
+  width: 48vmax;
+  height: 48vmax;
+  background: radial-gradient(circle, #f6e7bc, transparent 68%);
+  animation: blob-drift-a 26s var(--ease-in-out) infinite;
 }
 
 .field-texture::after {
   content: "";
-  bottom: -18%;
-  right: -10%;
-  width: 50vmax;
-  height: 50vmax;
-  background: radial-gradient(circle, var(--color-cream), transparent 70%);
-  animation: blob-drift-b 28s ease-in-out infinite;
+  bottom: -22%;
+  right: -14%;
+  width: 52vmax;
+  height: 52vmax;
+  background: radial-gradient(circle, rgba(201, 59, 72, 0.22), transparent 70%);
+  animation: blob-drift-b 30s var(--ease-in-out) infinite;
 }
 
 .blob-c {
-  top: 30%;
-  right: 15%;
-  width: 34vmax;
-  height: 34vmax;
-  background: radial-gradient(circle, var(--color-accent), transparent 72%);
-  animation: blob-drift-c 20s ease-in-out infinite;
+  top: 38%;
+  right: 18%;
+  width: 28vmax;
+  height: 28vmax;
+  background: radial-gradient(circle, rgba(9, 146, 194, 0.28), transparent 72%);
+  animation: blob-drift-c 22s var(--ease-in-out) infinite;
 }
 
 .surface {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow: 0 1px 2px rgba(11, 45, 114, 0.04);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 1px 2px rgba(23, 28, 36, 0.04);
 }
 
 .surface-soft {
@@ -252,14 +249,36 @@ body {
   border: 1px solid var(--color-border-soft);
 }
 
-/* Difficulty picker tiles: colored glow + lift, keyed off --difficulty-color. */
-.difficulty-card {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+.surface-cream {
+  background: color-mix(in srgb, var(--color-cream) 72%, white);
+  border: 1px solid color-mix(in srgb, var(--color-cream) 80%, rgba(23, 28, 36, 0.12));
 }
-.difficulty-card:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--difficulty-color) 45%, transparent);
-  box-shadow: 0 20px 40px -20px color-mix(in srgb, var(--difficulty-color) 55%, transparent);
+
+.pressable {
+  transition: transform 140ms var(--ease-press);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+
+.difficulty-card {
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+.difficulty-card:active {
+  transform: scale(0.98) translateY(-1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .difficulty-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--difficulty-color) 40%, transparent);
+    box-shadow: 0 18px 36px -22px color-mix(in srgb, var(--difficulty-color) 50%, transparent);
+  }
+  .difficulty-card:hover .difficulty-glow {
+    opacity: 0.22;
+  }
 }
 .difficulty-glow {
   position: absolute;
@@ -268,66 +287,84 @@ body {
   width: 65%;
   height: 150%;
   background: radial-gradient(circle, var(--difficulty-color), transparent 70%);
-  opacity: 0.14;
-  filter: blur(30px);
-  transition: opacity 0.3s ease;
+  opacity: 0.12;
+  filter: blur(28px);
+  transition: opacity 200ms ease;
   pointer-events: none;
 }
-.difficulty-card:hover .difficulty-glow {
-  opacity: 0.26;
-}
 
-/* Card hover treatment used for interactive tiles across the app. */
 .card-interactive {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms ease,
+    border-color 180ms ease;
 }
-.card-interactive:hover {
-  box-shadow: 0 16px 32px -18px rgba(11, 45, 114, 0.28), 0 0 0 1px rgba(9, 146, 194, 0.12);
+.card-interactive:active {
+  transform: scale(0.985);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive:hover {
+    box-shadow: 0 14px 28px -20px rgba(23, 28, 36, 0.22);
+    border-color: color-mix(in srgb, var(--color-paper) 14%, transparent);
+  }
 }
 
-/* Brand gradient text, used sparingly for hero headlines. */
+/* Headline accent: charcoal → cream warmth → cyan (not navy soup) */
 .brand-gradient-text {
-  background: linear-gradient(100deg, var(--color-paper) 10%, var(--color-accent) 45%, var(--color-accent-2) 65%, var(--color-paper) 90%);
+  background: linear-gradient(
+    105deg,
+    var(--color-paper) 0%,
+    #8a6b2a 38%,
+    var(--color-accent) 72%,
+    var(--color-paper) 100%
+  );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: gradient-pan 8s ease infinite;
+  animation: gradient-pan 9s var(--ease-in-out) infinite;
 }
 
-/* Fancy shimmering primary action surface. */
 .brand-shimmer {
-  background: linear-gradient(100deg, var(--color-accent) 0%, var(--color-accent-2) 25%, var(--color-accent) 50%, var(--color-accent-2) 75%, var(--color-accent) 100%);
+  background: linear-gradient(
+    100deg,
+    var(--color-accent) 0%,
+    var(--color-accent-2) 28%,
+    var(--color-accent) 52%,
+    var(--color-accent-2) 78%,
+    var(--color-accent) 100%
+  );
   background-size: 220% 100%;
   animation: shimmer 3.2s linear infinite;
 }
 
-/* Reserved for the sticky HUD only, per the skill's contextual-glass rule. */
 .hud-glass {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 252, 247, 0.78);
   border: 1px solid var(--color-border);
   backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px -16px rgba(11, 45, 114, 0.25);
+  box-shadow: 0 8px 24px -16px rgba(23, 28, 36, 0.2);
 }
 
-/* Persistent brand badge — always visible, floats gently. */
 .brand-badge {
   animation: var(--animate-float);
-  box-shadow: 0 14px 30px -12px rgba(11, 45, 114, 0.45);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  box-shadow: 0 12px 28px -14px rgba(23, 28, 36, 0.35);
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms ease;
 }
-.brand-badge:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 18px 34px -10px rgba(9, 146, 194, 0.5);
+@media (hover: hover) and (pointer: fine) {
+  .brand-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -12px rgba(9, 146, 194, 0.35);
+  }
 }
 
-/* First-visit welcome overlay */
 .intro-overlay {
-  background: radial-gradient(circle at 30% 20%, #123a86 0%, #0b2d72 45%, #071c4a 100%);
-  animation: intro-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  background: radial-gradient(circle at 30% 20%, #1a3f8a 0%, #0b2d72 48%, #071c4a 100%);
+  animation: intro-in 0.45s var(--ease-out) both;
 }
 .intro-overlay-out {
-  animation: intro-out 0.45s ease both;
+  animation: intro-out 0.35s ease both;
 }
 .intro-blob {
   position: absolute;
@@ -342,32 +379,32 @@ body {
   width: 55vmax;
   height: 55vmax;
   background: radial-gradient(circle, var(--color-accent-2), transparent 70%);
-  animation: blob-drift-a 18s ease-in-out infinite;
+  animation: blob-drift-a 18s var(--ease-in-out) infinite;
 }
 .intro-blob-b {
   bottom: -15%;
   right: -12%;
   width: 60vmax;
   height: 60vmax;
-  background: radial-gradient(circle, var(--color-accent), transparent 70%);
-  animation: blob-drift-b 22s ease-in-out infinite;
+  background: radial-gradient(circle, var(--color-cream), transparent 70%);
+  animation: blob-drift-b 22s var(--ease-in-out) infinite;
 }
 .intro-blob-c {
   top: 40%;
   right: 20%;
   width: 30vmax;
   height: 30vmax;
-  background: radial-gradient(circle, var(--color-cream), transparent 75%);
-  animation: blob-drift-c 16s ease-in-out infinite;
+  background: radial-gradient(circle, var(--color-accent), transparent 75%);
+  animation: blob-drift-c 16s var(--ease-in-out) infinite;
 }
 .intro-logo {
-  animation: intro-in 0.7s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: intro-in 0.55s 0.08s var(--ease-out) both;
 }
 .intro-tag {
-  animation: rise 0.6s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise 0.45s 0.28s var(--ease-out) both;
 }
 .intro-hint {
-  animation: rise 0.6s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise 0.45s 0.48s var(--ease-out) both;
 }
 
 .focus-ring {
@@ -378,10 +415,50 @@ body {
   outline-offset: 2px;
 }
 
+.stagger-item {
+  animation: rise 0.4s var(--ease-out) both;
+}
+.stagger-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-item:nth-child(2) {
+  animation-delay: 45ms;
+}
+.stagger-item:nth-child(3) {
+  animation-delay: 90ms;
+}
+.stagger-item:nth-child(4) {
+  animation-delay: 135ms;
+}
+.stagger-item:nth-child(5) {
+  animation-delay: 180ms;
+}
+.stagger-item:nth-child(6) {
+  animation-delay: 225ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+  .field-texture::before,
+  .field-texture::after,
+  .field-texture .blob-c,
+  .brand-badge,
+  .brand-gradient-text,
+  .brand-shimmer,
+  .intro-blob-a,
+  .intro-blob-b,
+  .intro-blob-c {
+    animation: none !important;
+  }
+  .difficulty-card,
+  .card-interactive,
+  .pressable,
+  .stagger-item {
+    animation: none !important;
+    transition: opacity 160ms ease, color 160ms ease, background-color 160ms ease !important;
+  }
+  .difficulty-card:hover,
+  .card-interactive:hover,
+  .pressable:active {
+    transform: none !important;
   }
 }

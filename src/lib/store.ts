@@ -16,6 +16,9 @@ import { getDb } from "./mongodb";
  * MongoDB-backed store for accounts, stats, and leagues.
  */
 
+/** Cap so the document stays small; once hit, oldest keys drop and may repeat. */
+export const MAX_SEEN_QUESTIONS = 1000;
+
 export interface UserRecord {
   username: string;
   passwordHash: string;
@@ -24,6 +27,8 @@ export interface UserRecord {
   stats: UserStats;
   achievements: string[];
   history: HistoryEntry[];
+  /** Lowercase exclude keys of questions this user has already been served. */
+  seenQuestions: string[];
 }
 
 interface UserDoc extends UserRecord {
@@ -53,10 +58,17 @@ function stripId<T extends { _id?: string }>(doc: T): Omit<T, "_id"> {
   return rest;
 }
 
+function normalizeUser(doc: Omit<UserDoc, "_id"> | UserRecord): UserRecord {
+  return {
+    ...doc,
+    seenQuestions: Array.isArray(doc.seenQuestions) ? doc.seenQuestions : [],
+  };
+}
+
 export async function getUser(username: string): Promise<UserRecord | null> {
   const col = await users();
   const doc = await col.findOne({ _id: username.toLowerCase() });
-  return doc ? (stripId(doc) as UserRecord) : null;
+  return doc ? normalizeUser(stripId(doc) as UserRecord) : null;
 }
 
 export async function createUser(username: string, passwordHash: string): Promise<UserRecord> {
@@ -69,10 +81,24 @@ export async function createUser(username: string, passwordHash: string): Promis
     stats: emptyStats(),
     achievements: [],
     history: [],
+    seenQuestions: [],
   };
   const col = await users();
   await col.insertOne({ _id: key, ...record });
   return record;
+}
+
+/** Append exclude keys the user has seen; keeps at most MAX_SEEN_QUESTIONS. */
+export async function markQuestionsSeen(username: string, keys: string[]): Promise<void> {
+  const normalized = [
+    ...new Set(keys.map((k) => k.trim().toLowerCase()).filter(Boolean)),
+  ];
+  if (normalized.length === 0) return;
+
+  await updateUser(username, (user) => {
+    const merged = [...new Set([...(user.seenQuestions ?? []), ...normalized])];
+    user.seenQuestions = merged.slice(-MAX_SEEN_QUESTIONS);
+  });
 }
 
 /** Loads the user, lets the caller mutate it in place, then persists. */
@@ -84,7 +110,7 @@ export async function updateUser(
   const key = username.toLowerCase();
   const doc = await col.findOne({ _id: key });
   if (!doc) return null;
-  const user = stripId(doc) as UserRecord;
+  const user = normalizeUser(stripId(doc) as UserRecord);
   mutate(user);
   await col.replaceOne({ _id: key }, { _id: key, ...user } as UserDoc);
   return user;

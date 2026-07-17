@@ -23,14 +23,21 @@ function StatCard({
   icon,
   label,
   value,
+  delay,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  delay: number;
 }) {
   return (
-    <div className="card-interactive flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent">{icon}</span>
+    <div
+      className="stagger-item flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-mute">
+        {icon}
+      </span>
       <span className="font-display text-2xl font-semibold text-paper">{value}</span>
       <span className="text-xs font-medium text-mute">{label}</span>
     </div>
@@ -87,7 +94,7 @@ export default function ProfilePage() {
     return (
       <main className="relative z-10 flex flex-1 flex-col px-6 py-16">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-          <span className="h-8 w-48 animate-pulse-soft rounded-full bg-surface-2" />
+          <span className="h-8 w-48 animate-pulse-soft rounded-2xl bg-surface-2" />
           <span className="h-40 w-full animate-pulse-soft rounded-2xl bg-surface-2" />
         </div>
       </main>
@@ -103,9 +110,8 @@ export default function ProfilePage() {
   return (
     <main className="relative z-10 flex-1 px-6 py-10 sm:py-14">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-10">
-        {/* Header */}
         <header className="flex flex-wrap items-center gap-4 animate-rise">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-2xl font-bold text-accent-ink">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand font-display text-2xl font-bold text-accent-ink">
             {user.username.slice(0, 2).toUpperCase()}
           </span>
           <div>
@@ -114,24 +120,42 @@ export default function ProfilePage() {
           </div>
         </header>
 
-        {/* Stats */}
-        <section className="grid grid-cols-2 gap-3 animate-rise sm:grid-cols-4" style={{ animationDelay: "0.05s" }}>
-          <StatCard icon={<TrophyIcon size={18} weight="fill" />} label="Games played" value={String(user.stats.gamesPlayed)} />
-          <StatCard icon={<PercentIcon size={18} weight="bold" />} label="Accuracy" value={`${accuracy}%`} />
-          <StatCard icon={<FireIcon size={18} weight="fill" />} label="Best answer streak" value={String(user.stats.bestAnswerStreak)} />
-          <StatCard icon={<CalendarCheckIcon size={18} weight="bold" />} label="Day streak" value={String(user.stats.dayStreak)} />
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            icon={<TrophyIcon size={18} weight="fill" />}
+            label="Games played"
+            value={String(user.stats.gamesPlayed)}
+            delay={0}
+          />
+          <StatCard
+            icon={<PercentIcon size={18} weight="bold" />}
+            label="Accuracy"
+            value={`${accuracy}%`}
+            delay={45}
+          />
+          <StatCard
+            icon={<FireIcon size={18} weight="fill" />}
+            label="Best answer streak"
+            value={String(user.stats.bestAnswerStreak)}
+            delay={90}
+          />
+          <StatCard
+            icon={<CalendarCheckIcon size={18} weight="bold" />}
+            label="Day streak"
+            value={String(user.stats.dayStreak)}
+            delay={135}
+          />
         </section>
 
-        {/* Favorites */}
-        <section className="animate-rise" style={{ animationDelay: "0.1s" }}>
+        <section className="animate-rise" style={{ animationDelay: "0.08s" }}>
           <h2 className="mb-4 text-lg font-semibold text-paper">Your favorites</h2>
-          <form onSubmit={saveFavorites} className="surface grid gap-4 rounded-2xl p-6 sm:grid-cols-3">
+          <form onSubmit={saveFavorites} className="surface-cream grid gap-4 rounded-3xl p-5 sm:grid-cols-3 sm:p-6">
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="font-medium text-paper">Favorite sport</span>
               <select
                 value={favoriteSport}
                 onChange={(e) => setFavoriteSport(e.target.value as Sport | "")}
-                className="focus-ring rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-paper outline-none transition-colors focus:border-accent/60"
+                className="focus-ring rounded-xl border border-border bg-surface px-3 py-2.5 text-paper outline-none transition-[border-color] duration-150 ease focus:border-accent/50"
               >
                 <option value="">Not set</option>
                 {SPORTS.map((s) => (
@@ -147,7 +171,7 @@ export default function ProfilePage() {
                 value={favoriteClub}
                 onChange={(e) => setFavoriteClub(e.target.value)}
                 placeholder="e.g. Real Madrid"
-                className="focus-ring rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-paper outline-none transition-colors placeholder:text-faint focus:border-accent/60"
+                className="focus-ring rounded-xl border border-border bg-surface px-3 py-2.5 text-paper outline-none transition-[border-color] duration-150 ease placeholder:text-faint focus:border-accent/50"
               />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
@@ -156,14 +180,14 @@ export default function ProfilePage() {
                 value={favoritePlayer}
                 onChange={(e) => setFavoritePlayer(e.target.value)}
                 placeholder="e.g. Serena Williams"
-                className="focus-ring rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-paper outline-none transition-colors placeholder:text-faint focus:border-accent/60"
+                className="focus-ring rounded-xl border border-border bg-surface px-3 py-2.5 text-paper outline-none transition-[border-color] duration-150 ease placeholder:text-faint focus:border-accent/50"
               />
             </label>
             <div className="col-span-full flex items-center gap-3">
               <button
                 type="submit"
                 disabled={saving}
-                className="brand-shimmer focus-ring rounded-full px-6 py-2.5 text-sm font-bold text-accent-ink transition-transform active:scale-[0.98] disabled:opacity-60"
+                className="brand-shimmer pressable focus-ring rounded-2xl px-6 py-2.5 text-sm font-bold text-accent-ink disabled:opacity-60"
               >
                 {saving ? "Saving…" : "Save favorites"}
               </button>
@@ -177,8 +201,7 @@ export default function ProfilePage() {
           </form>
         </section>
 
-        {/* Achievements */}
-        <section className="animate-rise" style={{ animationDelay: "0.15s" }}>
+        <section className="animate-rise" style={{ animationDelay: "0.12s" }}>
           <h2 className="mb-4 flex items-center justify-between text-lg font-semibold text-paper">
             Achievements
             <span className="text-sm font-medium text-mute">
@@ -186,19 +209,20 @@ export default function ProfilePage() {
             </span>
           </h2>
           <div className="grid gap-3 sm:grid-cols-3">
-            {ACHIEVEMENTS.map((a) => {
+            {ACHIEVEMENTS.map((a, i) => {
               const unlocked = unlockedSet.has(a.id);
               const AchievementIcon = a.icon;
               return (
                 <div
                   key={a.id}
-                  className={`card-interactive flex flex-col gap-2.5 rounded-2xl border p-5 ${
-                    unlocked ? "border-accent/30 bg-accent/5" : "border-border bg-surface"
+                  className={`stagger-item flex flex-col gap-2.5 rounded-2xl border p-5 ${
+                    unlocked ? "border-easy/25 bg-easy/5" : "border-border bg-surface"
                   }`}
+                  style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <span
                     className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                      unlocked ? "bg-accent text-accent-ink" : "bg-surface-2 text-faint"
+                      unlocked ? "bg-easy text-accent-ink" : "bg-surface-2 text-faint"
                     }`}
                   >
                     {unlocked ? <AchievementIcon size={20} weight="fill" /> : <LockSimpleIcon size={18} />}
@@ -213,8 +237,7 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* History */}
-        <section className="animate-rise" style={{ animationDelay: "0.2s" }}>
+        <section className="animate-rise" style={{ animationDelay: "0.16s" }}>
           <h2 className="mb-4 text-lg font-semibold text-paper">Recent games</h2>
           {user.history.length === 0 ? (
             <div className="surface rounded-2xl p-6 text-center text-sm text-mute">
@@ -230,7 +253,7 @@ export default function ProfilePage() {
                 <div key={h.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3.5 text-sm">
                   <div className="flex items-center gap-3">
                     <span
-                      className="rounded-full px-2.5 py-1 text-xs font-semibold"
+                      className="rounded-xl px-2.5 py-1 text-xs font-semibold"
                       style={{
                         color: DIFFICULTY_META[h.difficulty].color,
                         backgroundColor: "var(--color-surface-2)",
@@ -261,7 +284,7 @@ export default function ProfilePage() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/leagues"
-            className="brand-shimmer focus-ring inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-bold text-accent-ink"
+            className="brand-shimmer pressable focus-ring inline-flex items-center gap-1.5 rounded-2xl px-6 py-3 text-sm font-bold text-accent-ink"
           >
             <MedalIcon size={16} weight="fill" />
             View your leagues
@@ -269,9 +292,9 @@ export default function ProfilePage() {
           </Link>
           <Link
             href="/"
-            className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-6 py-3 text-sm font-semibold text-paper hover:border-accent/40"
+            className="pressable focus-ring inline-flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/40"
           >
-            <ShieldCheckIcon size={16} className="text-accent" />
+            <ShieldCheckIcon size={16} className="text-mute" />
             Play another round
           </Link>
         </div>

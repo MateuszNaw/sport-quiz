@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/auth";
 import { generateWithAi, isAiConfigured } from "@/lib/generate";
 import { pickFromBank } from "@/lib/questionBank";
-import { pickFromMongo } from "@/lib/questionDb";
+import { pickFromMongo, questionExcludeKey } from "@/lib/questionDb";
 import { pickFromStatic } from "@/lib/questionLoader";
+import { markQuestionsSeen } from "@/lib/store";
 import {
   DIFFICULTIES,
   QUIZ_TYPES,
@@ -18,6 +20,9 @@ export const runtime = "nodejs";
  * Body: { sport, difficulty, quizType?, exclude?: string[] }
  * Prefer MongoDB curated questions, then local JSON banks, then AI, then
  * the tiny hardcoded fallback bank.
+ *
+ * Signed-in users: merge their stored seenQuestions into exclude, then mark
+ * the served question as seen so it won't repeat across sessions.
  */
 export async function POST(req: Request) {
   let body: GenerateQuestionRequest;
@@ -50,25 +55,34 @@ export async function POST(req: Request) {
   const quizType: QuizType =
     body.quizType ?? QUIZ_TYPES[Math.floor(Math.random() * QUIZ_TYPES.length)];
 
-  const mongoQuestion = await pickFromMongo(sport, difficulty, quizType, exclude);
-  if (mongoQuestion) {
-    return NextResponse.json({ question: mongoQuestion });
-  }
+  const sessionUser = await getSessionUser();
+  const seen = sessionUser?.seenQuestions ?? [];
+  const mergedExclude = [...new Set([...exclude, ...seen].map((e) => e.toLowerCase()))];
 
-  const staticQuestion = pickFromStatic(sport, difficulty, quizType, exclude);
-  if (staticQuestion) {
-    return NextResponse.json({ question: staticQuestion });
-  }
+  let question =
+    (await pickFromMongo(sport, difficulty, quizType, mergedExclude)) ??
+    pickFromStatic(sport, difficulty, quizType, mergedExclude);
 
-  if (isAiConfigured()) {
+  if (!question && isAiConfigured()) {
     try {
-      const question = await generateWithAi(sport, difficulty, quizType, exclude);
-      return NextResponse.json({ question });
+      question = await generateWithAi(sport, difficulty, quizType, mergedExclude);
     } catch (err) {
       console.error("AI generation failed, falling back to bank:", err);
     }
   }
 
-  const question = pickFromBank(sport, difficulty, quizType, exclude);
+  if (!question) {
+    question = pickFromBank(sport, difficulty, quizType, mergedExclude);
+  }
+
+  if (sessionUser) {
+    const key = questionExcludeKey(question);
+    if (key) {
+      // Fire-and-forget would risk lost writes on cold shutdown; await is fine
+      // for a single $replace of the user doc.
+      await markQuestionsSeen(sessionUser.username, [key]);
+    }
+  }
+
   return NextResponse.json({ question });
 }

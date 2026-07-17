@@ -6,16 +6,15 @@ import { DIFFICULTIES, QUIZ_TYPES, SPORTS } from "@/lib/types";
 export default function Home() {
   return (
     <main className="relative z-10 flex-1 px-6 py-12 sm:py-16">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-16">
-        {/* Hero */}
-        <header className="flex flex-col gap-6 animate-rise">
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-mute shadow-[0_1px_2px_rgba(11,45,114,0.04)]">
-            <TrophyIcon size={14} weight="fill" className="text-accent" />
-            SportIQ
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-14">
+        <header className="flex flex-col gap-5 animate-rise">
+          <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-border bg-surface-2/80 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-mute shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
+            <TrophyIcon size={14} weight="fill" className="text-brand" />
+            <span className="text-brand">SportIQ</span>
             <span className="mx-1 h-3 w-px bg-border" />
-            <span className="text-accent-2">powered by Sportradar</span>
+            <span className="text-mute normal-case tracking-normal">powered by Sportradar</span>
           </div>
-          <h1 className="max-w-2xl font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
+          <h1 className="max-w-2xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-paper sm:text-5xl">
             Sports trivia,{" "}
             <span className="brand-gradient-text">never the same round twice.</span>
           </h1>
@@ -25,13 +24,12 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Difficulty selection */}
-        <section className="flex flex-col gap-5 animate-rise" style={{ animationDelay: "0.08s" }}>
-          <div className="flex items-baseline justify-between">
+        <section className="surface-cream flex flex-col gap-5 rounded-[1.75rem] p-5 sm:p-6 animate-rise" style={{ animationDelay: "0.06s" }}>
+          <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-lg font-semibold text-paper">Choose your difficulty</h2>
-            <span className="text-xs font-medium text-faint">10 questions · pick one to start</span>
+            <span className="text-xs font-medium text-mute">10 questions · pick one to start</span>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             {DIFFICULTIES.map((d, i) => {
               const meta = DIFFICULTY_META[d];
               const DifficultyIcon = meta.icon;
@@ -39,23 +37,28 @@ export default function Home() {
                 <Link
                   key={d}
                   href={`/quiz?difficulty=${d}&length=10`}
-                  className="difficulty-card focus-ring group relative flex flex-col gap-4 overflow-hidden rounded-3xl border border-border bg-surface p-6 animate-rise"
-                  style={{ "--difficulty-color": meta.color, animationDelay: `${0.05 + i * 0.07}s` } as React.CSSProperties}
+                  className="difficulty-card pressable focus-ring group relative flex flex-col gap-4 overflow-hidden rounded-3xl border border-border bg-surface p-5 stagger-item"
+                  style={{ "--difficulty-color": meta.color, animationDelay: `${i * 45}ms` } as React.CSSProperties}
                 >
                   <span className="difficulty-glow" aria-hidden="true" />
                   <div className="relative z-10 flex items-center justify-between">
                     <span
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-                      style={{ backgroundColor: "color-mix(in srgb, var(--difficulty-color) 16%, transparent)", color: meta.color }}
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, var(--difficulty-color) 14%, transparent)",
+                        color: meta.color,
+                      }}
                     >
-                      <DifficultyIcon size={24} weight="fill" />
+                      <DifficultyIcon size={22} weight="fill" />
                     </span>
                     <span className="flex gap-1">
                       {[1, 2, 3].map((dot) => (
                         <span
                           key={dot}
-                          className="h-1.5 w-1.5 rounded-full transition-colors"
-                          style={{ backgroundColor: dot <= meta.intensity ? meta.color : "var(--color-border)" }}
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{
+                            backgroundColor: dot <= meta.intensity ? meta.color : "var(--color-border)",
+                          }}
                         />
                       ))}
                     </span>
@@ -64,9 +67,12 @@ export default function Home() {
                     <span className="font-display text-xl font-semibold text-paper">{meta.label}</span>
                     <p className="mt-1 text-sm text-mute">{meta.description}</p>
                   </div>
-                  <div className="relative z-10 mt-auto flex items-center justify-between border-t border-border-soft pt-3.5 text-xs font-medium text-faint">
+                  <div className="relative z-10 mt-auto flex items-center justify-between border-t border-border-soft pt-3 text-xs font-medium text-faint">
                     <span>{meta.points} pts / correct</span>
-                    <span className="flex items-center gap-1 font-semibold opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" style={{ color: meta.color }}>
+                    <span
+                      className="flex items-center gap-1 font-semibold opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:opacity-100"
+                      style={{ color: meta.color }}
+                    >
                       Start
                       <ArrowRightIcon size={12} weight="bold" />
                     </span>
@@ -77,20 +83,16 @@ export default function Home() {
           </div>
           <Link
             href="/quiz?difficulty=medium&length=0"
-            className="card-interactive focus-ring group inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-5 py-3 text-sm font-semibold text-paper hover:-translate-y-0.5 hover:border-accent/40"
+            className="pressable focus-ring group inline-flex items-center gap-2.5 self-start rounded-2xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:border-paper/20 hover:bg-surface"
           >
-            <InfinityIcon size={18} className="text-accent" />
+            <InfinityIcon size={18} className="text-medium" />
             Endless mode, questions until you quit
           </Link>
         </section>
 
-        {/* Coverage */}
-        <section
-          className="grid gap-4 sm:grid-cols-2 animate-rise"
-          style={{ animationDelay: "0.16s" }}
-        >
-          <div className="card-interactive rounded-2xl border border-border bg-surface p-6">
-            <h3 className="mb-4 text-sm font-semibold text-paper">Nine sports covered</h3>
+        <section className="grid gap-3 sm:grid-cols-2 animate-rise" style={{ animationDelay: "0.12s" }}>
+          <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+            <h3 className="mb-3 text-sm font-semibold text-paper">Nine sports covered</h3>
             <div className="flex flex-wrap gap-2">
               {SPORTS.map((s) => {
                 const meta = SPORT_META[s];
@@ -98,7 +100,7 @@ export default function Home() {
                 return (
                   <span
                     key={s}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border-soft bg-surface-2 px-3 py-1.5 text-sm text-mute transition-colors hover:bg-cream/60"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-border-soft bg-surface-2/70 px-3 py-1.5 text-sm text-mute"
                   >
                     <SportIcon size={15} weight="duotone" style={{ color: meta.color }} />
                     {meta.label}
@@ -107,8 +109,8 @@ export default function Home() {
               })}
             </div>
           </div>
-          <div className="card-interactive rounded-2xl border border-border bg-surface p-6">
-            <h3 className="mb-4 text-sm font-semibold text-paper">Five quiz formats</h3>
+          <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+            <h3 className="mb-3 text-sm font-semibold text-paper">Five quiz formats</h3>
             <div className="flex flex-wrap gap-2">
               {QUIZ_TYPES.map((t) => {
                 const meta = QUIZ_TYPE_META[t];
@@ -116,9 +118,9 @@ export default function Home() {
                 return (
                   <span
                     key={t}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border-soft bg-surface-2 px-3 py-1.5 text-sm text-mute transition-colors hover:bg-cream/60"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-border-soft bg-ink/60 px-3 py-1.5 text-sm text-mute"
                   >
-                    <TypeIcon size={15} className="text-accent" />
+                    <TypeIcon size={15} className="text-brand" />
                     {meta.label}
                   </span>
                 );
