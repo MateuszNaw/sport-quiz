@@ -23,7 +23,6 @@ function excludeKey(q) {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
-    case "image-quiz":
       return String(q.prompt || "").toLowerCase();
     case "prediction":
       return `${q.scenario || ""} ${q.prompt || ""}`.toLowerCase();
@@ -55,6 +54,7 @@ async function main() {
         const diffs = ["easy", "medium", "hard"];
         let i = 0;
         for (const entry of raw) {
+          if (entry.quizType === "image-quiz") continue;
           const sport = sports[i % sports.length];
           const difficulty = diffs[i % diffs.length];
           const key = excludeKey(entry);

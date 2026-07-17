@@ -31,7 +31,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "100 Correct Answers",
     description: "Answer 100 questions correctly across every game.",
     icon: TargetIcon,
-    color: "#7CC6FE",
+    color: "#2563eb",
     check: (s) => s.correctAnswers >= 100,
   },
   {
@@ -39,7 +39,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "500 Correct Answers",
     description: "Reach 500 career correct answers.",
     icon: TrophyIcon,
-    color: "#FFE599",
+    color: "#c07207",
     check: (s) => s.correctAnswers >= 500,
   },
   {
@@ -47,7 +47,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "10-Day Streak",
     description: "Play SportIQ on 10 consecutive days.",
     icon: FireIcon,
-    color: "#FFBFA3",
+    color: "#e06a13",
     check: (s) => s.dayStreak >= 10,
   },
   {
@@ -55,7 +55,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Football Expert",
     description: "Answer 20 football questions correctly.",
     icon: SoccerBallIcon,
-    color: "#9BE7C4",
+    color: "#0f9152",
     check: (s) => (s.perSport.football?.correct ?? 0) >= 20,
   },
   {
@@ -63,7 +63,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "NBA Guru",
     description: "Answer 20 basketball questions correctly.",
     icon: BasketballIcon,
-    color: "#FFBFA3",
+    color: "#e06a13",
     check: (s) => (s.perSport.basketball?.correct ?? 0) >= 20,
   },
   {
@@ -71,7 +71,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Tennis Ace",
     description: "Answer 20 tennis questions correctly.",
     icon: TennisBallIcon,
-    color: "#A8E6A3",
+    color: "#178a4c",
     check: (s) => (s.perSport.tennis?.correct ?? 0) >= 20,
   },
   {
@@ -79,7 +79,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Never Wrong",
     description: "Finish a round with a perfect, 100% accurate score.",
     icon: ShieldCheckIcon,
-    color: "#7CC6FE",
+    color: "#2563eb",
     check: (s) => s.perfectRounds >= 1,
   },
   {
@@ -87,7 +87,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Perfectionist",
     description: "Finish 5 perfect rounds.",
     icon: MedalIcon,
-    color: "#CDB4FF",
+    color: "#7c3aed",
     check: (s) => s.perfectRounds >= 5,
   },
   {
@@ -95,7 +95,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "History Master",
     description: "Correctly order 10 timeline questions.",
     icon: ClockCounterClockwiseIcon,
-    color: "#FFE599",
+    color: "#c07207",
     check: (s) => s.timelinePerfectCount >= 10,
   },
   {
@@ -103,7 +103,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Speed Demon",
     description: "Earn the speed bonus on 25 answers.",
     icon: LightningIcon,
-    color: "#FF9E9E",
+    color: "#d33d4e",
     check: (s) => (s.speedBonusCount ?? 0) >= 25,
   },
   {
@@ -111,7 +111,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Challenger",
     description: "Win 3 friend challenges.",
     icon: SwordIcon,
-    color: "#CDB4FF",
+    color: "#7c3aed",
     check: (s) => (s.challengesWon ?? 0) >= 3,
   },
   {
@@ -119,7 +119,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     label: "Rising Star",
     description: "Reach player level 5.",
     icon: FireIcon,
-    color: "#FFBFA3",
+    color: "#e06a13",
     check: (s) => levelFromXp(s.xp ?? s.totalScore) >= 5,
   },
 ];

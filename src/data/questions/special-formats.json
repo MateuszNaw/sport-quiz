@@ -1,59 +1,5 @@
 [
   {
-    "quizType": "image-quiz",
-    "prompt": "Who is this football legend?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Cristiano_Ronaldo_playing_for_Al_Nassr_FC_against_Persepolis%2C_September_2023_%28cropped%29.jpg/440px-Cristiano_Ronaldo_playing_for_Al_Nassr_FC_against_Persepolis%2C_September_2023_%28cropped%29.jpg",
-    "imageCaption": "Five-time Champions League winner",
-    "options": ["Lionel Messi", "Cristiano Ronaldo", "Zlatan Ibrahimović", "Karim Benzema"],
-    "correctIndex": 1,
-    "explanation": "Cristiano Ronaldo is one of football's all-time leading scorers and a five-time Ballon d'Or winner."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Which NBA icon is shown here?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Michael_Jordan_in_2014.jpg/440px-Michael_Jordan_in_2014.jpg",
-    "imageCaption": "Six-time NBA champion",
-    "options": ["Kobe Bryant", "LeBron James", "Michael Jordan", "Magic Johnson"],
-    "correctIndex": 2,
-    "explanation": "Michael Jordan led the Chicago Bulls to six NBA titles in the 1990s."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Name this tennis great.",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Serena_Williams_at_2013_US_Open.jpg/440px-Serena_Williams_at_2013_US_Open.jpg",
-    "imageCaption": "23 Grand Slam singles titles",
-    "options": ["Venus Williams", "Serena Williams", "Maria Sharapova", "Steffi Graf"],
-    "correctIndex": 1,
-    "explanation": "Serena Williams holds 23 major singles titles, the most in the Open Era."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Who is this Formula 1 champion?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Lewis_Hamilton_2016_Malaysia_2.jpg/440px-Lewis_Hamilton_2016_Malaysia_2.jpg",
-    "imageCaption": "Seven-time world champion",
-    "options": ["Max Verstappen", "Sebastian Vettel", "Lewis Hamilton", "Fernando Alonso"],
-    "correctIndex": 2,
-    "explanation": "Lewis Hamilton is a seven-time Formula One World Champion."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Which MMA star is pictured?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Conor_McGregor_UGC_94.jpg/440px-Conor_McGregor_UGC_94.jpg",
-    "imageCaption": "Former two-division UFC champion",
-    "options": ["Jon Jones", "Conor McGregor", "Khabib Nurmagomedov", "Israel Adesanya"],
-    "correctIndex": 1,
-    "explanation": "Conor McGregor was the first fighter to hold UFC titles in two divisions at once."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Who is this hockey legend?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Wayne_Gretzky_2006.jpg/440px-Wayne_Gretzky_2006.jpg",
-    "imageCaption": "The Great One",
-    "options": ["Mario Lemieux", "Wayne Gretzky", "Sidney Crosby", "Alex Ovechkin"],
-    "correctIndex": 1,
-    "explanation": "Wayne Gretzky holds the NHL career points record by a huge margin."
-  },
-  {
     "quizType": "prediction",
     "scenario": "A football team is 2-0 down at half-time in a cup final. Historically, comebacks of two goals in finals are rare but memorable.",
     "prompt": "What usually happens next most often?",
@@ -156,23 +102,5 @@
     ],
     "correctIndex": 0,
     "explanation": "With two outs, one more out ends the game — strikeout, groundout, or flyout all work if the run doesn't score first."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Who is this cricket icon?",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Sachin_Tendulkar_at_MRF_Promotion_Event.jpg/440px-Sachin_Tendulkar_at_MRF_Promotion_Event.jpg",
-    "imageCaption": "Little Master",
-    "options": ["Virat Kohli", "Sachin Tendulkar", "Ricky Ponting", "Brian Lara"],
-    "correctIndex": 1,
-    "explanation": "Sachin Tendulkar scored 100 international centuries across Tests and ODIs."
-  },
-  {
-    "quizType": "image-quiz",
-    "prompt": "Name this basketball superstar.",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/LeBron_James_%2851949977144%29_%28cropped%29.jpg/440px-LeBron_James_%2851949977144%29_%28cropped%29.jpg",
-    "imageCaption": "King James",
-    "options": ["Stephen Curry", "Kevin Durant", "LeBron James", "Giannis Antetokounmpo"],
-    "correctIndex": 2,
-    "explanation": "LeBron James is a four-time NBA champion and among the all-time scoring leaders."
   }
 ]

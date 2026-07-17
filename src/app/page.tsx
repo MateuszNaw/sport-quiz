@@ -25,7 +25,7 @@ export default function Home() {
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-mute sm:text-lg">
             Pick from three random sports each round and answer questions across
-            seven formats and three difficulty levels.
+            six formats and three difficulty levels.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -139,7 +139,7 @@ export default function Home() {
             </div>
           </div>
           <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
-            <h3 className="mb-3 text-sm font-semibold text-paper">Seven quiz formats</h3>
+            <h3 className="mb-3 text-sm font-semibold text-paper">Six quiz formats</h3>
             <div className="flex flex-wrap gap-2">
               {QUIZ_TYPES.map((t) => {
                 const meta = QUIZ_TYPE_META[t];

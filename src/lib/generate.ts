@@ -54,15 +54,6 @@ const TYPE_SCHEMAS: Record<QuizType, string> = {
   "events": string[4],            // in CORRECT chronological order, each mentioning its era/year
   "explanation": string
 }`,
-  "image-quiz": `{
-  "quizType": "image-quiz",
-  "prompt": string,
-  "imageUrl": string,             // must be a real public https URL to a photo
-  "imageCaption": string,
-  "options": string[4],
-  "correctIndex": number,
-  "explanation": string
-}`,
   prediction: `{
   "quizType": "prediction",
   "scenario": string,             // the setup
@@ -154,25 +145,6 @@ function validateQuestion(raw: unknown, sport: Sport, difficulty: Difficulty): Q
       )
         throw new Error("Invalid timeline payload");
       return { ...base, quizType, prompt: q.prompt, events: q.events };
-    }
-    case "image-quiz": {
-      if (
-        typeof q.prompt !== "string" ||
-        typeof q.imageUrl !== "string" ||
-        !Array.isArray(q.options) ||
-        q.options.length !== 4 ||
-        typeof q.correctIndex !== "number"
-      )
-        throw new Error("Invalid image-quiz payload");
-      return {
-        ...base,
-        quizType,
-        prompt: q.prompt,
-        imageUrl: q.imageUrl,
-        imageCaption: typeof q.imageCaption === "string" ? q.imageCaption : undefined,
-        options: q.options as string[],
-        correctIndex: q.correctIndex,
-      };
     }
     case "prediction": {
       if (

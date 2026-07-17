@@ -1,19 +1,18 @@
 @import "tailwindcss";
 
 /*
-  Soft pastel system:
-    Primary    — Sky Blue   #7CC6FE  (brand / CTAs)
-    Secondary  — Mint       #9BE7C4
-    Accent     — Peach      #FFBFA3
-    Highlight  — Lavender   #CDB4FF
-    Success    — Soft Green #A8E6A3
-    Error      — Soft Coral #FF9E9E
-    Warning    — Butter     #FFE599
+  Tightened palette — one accent, warm neutrals:
+    Canvas     — warm paper  #f7f5f0
+    Cards      — white
+    Text       — near-black  #1c1f26
+    Accent     — royal blue  #2563eb  (the ONLY interactive color)
+    Cream      — warm band   #f4eedd  (difficulty section backdrop)
+    Difficulty — green / amber / red  (functional, nowhere else)
 */
 
 :root {
-  --background: #fafbfd;
-  --foreground: #2d3748;
+  --background: #f7f5f0;
+  --foreground: #1c1f26;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-press: cubic-bezier(0.23, 1, 0.32, 1);
@@ -24,32 +23,34 @@
   --color-foreground: var(--foreground);
 
   /* Canvas & cards */
-  --color-ink: #fafbfd;
+  --color-ink: #f7f5f0;
   --color-surface: #ffffff;
-  --color-surface-2: #f3f6fa;
-  --color-border: #e2e8f0;
-  --color-border-soft: color-mix(in srgb, #e2e8f0 70%, transparent);
+  --color-surface-2: #f1eee6;
+  --color-border: #e4e0d5;
+  --color-border-soft: color-mix(in srgb, #e4e0d5 65%, transparent);
 
   /* Text */
-  --color-paper: #2d3748;
-  --color-mute: #718096;
-  --color-faint: #a0aec0;
+  --color-paper: #1c1f26;
+  --color-mute: #5d6270;
+  --color-faint: #989ea9;
 
-  /* Brand palette */
-  --color-brand: #7cc6fe;
-  --color-mint: #9be7c4;
-  --color-peach: #ffbfa3;
-  --color-lavender: #cdb4ff;
-  --color-accent: #7cc6fe;
-  --color-accent-dim: #5eb8fa;
-  --color-accent-2: #a8dafe;
-  --color-accent-ink: #2d3748;
-  --color-cream: #e8f6ff;
+  /* One accent family */
+  --color-brand: #0b2d72;
+  --color-accent: #2563eb;
+  --color-accent-dim: #1d4ed8;
+  --color-accent-2: #60a5fa;
+  --color-accent-ink: #ffffff;
+  --color-cream: #f4eedd;
 
-  /* Semantic */
-  --color-easy: #a8e6a3;
-  --color-medium: #ffe599;
-  --color-hard: #ff9e9e;
+  /* Legacy aliases — all resolve into the tight palette */
+  --color-mint: #2563eb;
+  --color-peach: #b45309;
+  --color-lavender: #5d6270;
+
+  /* Semantic difficulty scale (functional, not decorative) */
+  --color-easy: #178a4c;
+  --color-medium: #c07207;
+  --color-hard: #d33d4e;
 
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-space-grotesk);
@@ -157,24 +158,6 @@
       transform: translate(6%, 5%) scale(1.1);
     }
   }
-  @keyframes blob-drift-b {
-    0%,
-    100% {
-      transform: translate(8%, 4%) scale(1);
-    }
-    50% {
-      transform: translate(-5%, -8%) scale(1.12);
-    }
-  }
-  @keyframes blob-drift-c {
-    0%,
-    100% {
-      transform: translate(0, 8%) scale(1.02);
-    }
-    50% {
-      transform: translate(-6%, -3%) scale(0.94);
-    }
-  }
 }
 
 * {
@@ -191,7 +174,7 @@ body {
   font-family: var(--font-space-grotesk), var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Soft pastel field wash */
+/* Quiet field: dot grid + one soft accent wash. No competing blobs. */
 .field-texture {
   position: fixed;
   inset: 0;
@@ -199,55 +182,35 @@ body {
   pointer-events: none;
   overflow: hidden;
   background-image:
-    radial-gradient(ellipse 90% 55% at 12% -5%, rgba(124, 198, 254, 0.35), transparent 55%),
-    radial-gradient(ellipse 70% 45% at 92% 8%, rgba(205, 180, 255, 0.28), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 70% 95%, rgba(155, 231, 196, 0.3), transparent 55%),
-    radial-gradient(circle at 1px 1px, rgba(45, 55, 72, 0.04) 1px, transparent 0);
-  background-size: auto, auto, auto, 28px 28px;
-}
-
-.field-texture::before,
-.field-texture::after,
-.field-texture .blob-c {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.55;
+    radial-gradient(ellipse 75% 50% at 85% -10%, rgba(37, 99, 235, 0.07), transparent 60%),
+    radial-gradient(ellipse 80% 55% at 8% 108%, rgba(244, 238, 221, 0.9), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(28, 31, 38, 0.05) 1px, transparent 0);
+  background-size: auto, auto, 28px 28px;
 }
 
 .field-texture::before {
   content: "";
-  top: -18%;
-  left: -12%;
-  width: 48vmax;
-  height: 48vmax;
-  background: radial-gradient(circle, #7cc6fe, transparent 68%);
-  animation: blob-drift-a 26s var(--ease-in-out) infinite;
+  position: absolute;
+  top: -20%;
+  right: -12%;
+  width: 44vmax;
+  height: 44vmax;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.16;
+  background: radial-gradient(circle, var(--color-accent), transparent 68%);
+  animation: blob-drift-a 30s var(--ease-in-out) infinite;
 }
 
-.field-texture::after {
-  content: "";
-  bottom: -22%;
-  right: -14%;
-  width: 52vmax;
-  height: 52vmax;
-  background: radial-gradient(circle, rgba(255, 191, 163, 0.7), transparent 70%);
-  animation: blob-drift-b 30s var(--ease-in-out) infinite;
-}
-
-.blob-c {
-  top: 38%;
-  right: 18%;
-  width: 28vmax;
-  height: 28vmax;
-  background: radial-gradient(circle, rgba(205, 180, 255, 0.65), transparent 72%);
-  animation: blob-drift-c 22s var(--ease-in-out) infinite;
+/* Kept for markup compat; intentionally invisible now. */
+.field-texture .blob-c {
+  display: none;
 }
 
 .surface {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 1px 2px rgba(45, 55, 72, 0.04);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 1px 2px rgba(28, 31, 38, 0.04);
 }
 
 .surface-soft {
@@ -256,8 +219,8 @@ body {
 }
 
 .surface-cream {
-  background: color-mix(in srgb, var(--color-cream) 78%, white);
-  border: 1px solid color-mix(in srgb, var(--color-brand) 22%, var(--color-border));
+  background: color-mix(in srgb, var(--color-cream) 65%, white);
+  border: 1px solid color-mix(in srgb, var(--color-cream) 70%, rgba(28, 31, 38, 0.14));
 }
 
 .pressable {
@@ -279,11 +242,11 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .difficulty-card:hover {
     transform: translateY(-4px);
-    border-color: color-mix(in srgb, var(--difficulty-color) 55%, transparent);
-    box-shadow: 0 18px 36px -22px color-mix(in srgb, var(--difficulty-color) 55%, transparent);
+    border-color: color-mix(in srgb, var(--difficulty-color) 45%, transparent);
+    box-shadow: 0 18px 36px -22px color-mix(in srgb, var(--difficulty-color) 45%, transparent);
   }
   .difficulty-card:hover .difficulty-glow {
-    opacity: 0.28;
+    opacity: 0.16;
   }
 }
 .difficulty-glow {
@@ -293,7 +256,7 @@ body {
   width: 65%;
   height: 150%;
   background: radial-gradient(circle, var(--difficulty-color), transparent 70%);
-  opacity: 0.18;
+  opacity: 0.08;
   filter: blur(28px);
   transition: opacity 200ms ease;
   pointer-events: none;
@@ -310,51 +273,51 @@ body {
 }
 @media (hover: hover) and (pointer: fine) {
   .card-interactive:hover {
-    box-shadow: 0 14px 28px -20px rgba(45, 55, 72, 0.16);
-    border-color: color-mix(in srgb, var(--color-brand) 40%, var(--color-border));
+    box-shadow: 0 14px 28px -20px rgba(28, 31, 38, 0.18);
+    border-color: color-mix(in srgb, var(--color-paper) 16%, var(--color-border));
   }
 }
 
-/* Headline accent: charcoal → peach → sky → lavender */
+/* Headline accent: single hue, two shades. Reads as one voice. */
 .brand-gradient-text {
   background: linear-gradient(
-    105deg,
-    var(--color-paper) 0%,
-    var(--color-peach) 32%,
-    var(--color-brand) 58%,
-    var(--color-lavender) 82%,
-    var(--color-paper) 100%
+    100deg,
+    var(--color-accent-dim) 0%,
+    var(--color-accent) 45%,
+    var(--color-accent-2) 100%
   );
-  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: gradient-pan 9s var(--ease-in-out) infinite;
 }
 
+/* Primary action: solid confident blue with a soft inner light. */
 .brand-shimmer {
-  background: linear-gradient(
-    100deg,
-    var(--color-accent) 0%,
-    var(--color-accent-2) 28%,
-    var(--color-mint) 52%,
-    var(--color-accent-2) 78%,
-    var(--color-accent) 100%
-  );
-  background-size: 220% 100%;
-  animation: shimmer 3.2s linear infinite;
+  background: linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-dim) 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 8px 20px -10px rgba(37, 99, 235, 0.55);
+  transition: box-shadow 200ms ease, filter 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .brand-shimmer:hover {
+    filter: brightness(1.06);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.25) inset,
+      0 10px 24px -10px rgba(37, 99, 235, 0.65);
+  }
 }
 
 .hud-glass {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--color-border);
   backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px -16px rgba(45, 55, 72, 0.14);
+  box-shadow: 0 8px 24px -16px rgba(28, 31, 38, 0.16);
 }
 
 .brand-badge {
   animation: var(--animate-float);
-  box-shadow: 0 12px 28px -14px rgba(45, 55, 72, 0.22);
+  box-shadow: 0 12px 28px -14px rgba(28, 31, 38, 0.25);
   transition:
     transform 200ms var(--ease-out),
     box-shadow 200ms ease;
@@ -362,12 +325,12 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .brand-badge:hover {
     transform: translateY(-2px);
-    box-shadow: 0 16px 32px -12px rgba(124, 198, 254, 0.45);
+    box-shadow: 0 16px 32px -12px rgba(37, 99, 235, 0.35);
   }
 }
 
 .intro-overlay {
-  background: radial-gradient(circle at 30% 20%, #e8f6ff 0%, #fafbfd 48%, #f3eefc 100%);
+  background: radial-gradient(circle at 30% 20%, #ffffff 0%, #f7f5f0 55%, #f4eedd 100%);
   animation: intro-in 0.45s var(--ease-out) both;
 }
 .intro-overlay-out {
@@ -377,7 +340,7 @@ body {
   position: absolute;
   border-radius: 9999px;
   filter: blur(60px);
-  opacity: 0.55;
+  opacity: 0.4;
   pointer-events: none;
 }
 .intro-blob-a {
@@ -385,7 +348,8 @@ body {
   left: -10%;
   width: 55vmax;
   height: 55vmax;
-  background: radial-gradient(circle, var(--color-brand), transparent 70%);
+  opacity: 0.18;
+  background: radial-gradient(circle, var(--color-accent), transparent 70%);
   animation: blob-drift-a 18s var(--ease-in-out) infinite;
 }
 .intro-blob-b {
@@ -393,16 +357,11 @@ body {
   right: -12%;
   width: 60vmax;
   height: 60vmax;
-  background: radial-gradient(circle, var(--color-peach), transparent 70%);
-  animation: blob-drift-b 22s var(--ease-in-out) infinite;
+  background: radial-gradient(circle, var(--color-cream), transparent 70%);
+  animation: blob-drift-a 22s var(--ease-in-out) infinite reverse;
 }
 .intro-blob-c {
-  top: 40%;
-  right: 20%;
-  width: 30vmax;
-  height: 30vmax;
-  background: radial-gradient(circle, var(--color-lavender), transparent 75%);
-  animation: blob-drift-c 16s var(--ease-in-out) infinite;
+  display: none;
 }
 .intro-logo {
   animation: intro-in 0.55s 0.08s var(--ease-out) both;
@@ -446,14 +405,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .field-texture::before,
-  .field-texture::after,
-  .field-texture .blob-c,
   .brand-badge,
-  .brand-gradient-text,
-  .brand-shimmer,
   .intro-blob-a,
-  .intro-blob-b,
-  .intro-blob-c {
+  .intro-blob-b {
     animation: none !important;
   }
   .difficulty-card,

@@ -11,7 +11,6 @@ import {
 import type {
   GuessPlayerQuestion,
   GuessScoreQuestion,
-  ImageQuizQuestion,
   MultipleChoiceQuestion,
   PredictionQuestion,
   TimelineQuestion,
@@ -444,74 +443,6 @@ export function Timeline({
       <p className="text-center text-xs text-faint">
         Partial credit for each event in the right position
       </p>
-    </div>
-  );
-}
-
-export function ImageQuiz({
-  question,
-  onAnswer,
-}: {
-  question: ImageQuizQuestion;
-  onAnswer: (r: AnswerResult) => void;
-}) {
-  const [picked, setPicked] = useState<number | null>(null);
-  const [imgFailed, setImgFailed] = useState(false);
-  const answered = picked !== null;
-
-  function pick(i: number) {
-    if (answered) return;
-    setPicked(i);
-    onAnswer({
-      correct: i === question.correctIndex,
-      credit: i === question.correctIndex ? 1 : 0,
-      userAnswer: question.options[i],
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-5">
-      <h2 className="font-display text-xl font-semibold text-paper sm:text-2xl">{question.prompt}</h2>
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface-2">
-        {!imgFailed ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={question.imageUrl}
-            alt={question.imageCaption ?? "Quiz subject"}
-            className="mx-auto max-h-72 w-full object-cover"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div className="flex h-48 items-center justify-center bg-brand/10 font-display text-4xl font-bold text-brand">
-            ?
-          </div>
-        )}
-        {question.imageCaption && (
-          <p className="border-t border-border-soft px-4 py-2 text-center text-xs text-mute">
-            {question.imageCaption}
-          </p>
-        )}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {question.options.map((opt, i) => {
-          let cls = optionIdle;
-          if (answered) {
-            if (i === question.correctIndex) cls = optionCorrect;
-            else if (i === picked) cls = optionWrong;
-            else cls = optionDim;
-          }
-          return (
-            <button
-              key={i}
-              disabled={answered}
-              onClick={() => pick(i)}
-              className={`focus-ring ${optionBase} ${cls}`}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

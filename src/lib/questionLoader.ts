@@ -69,7 +69,6 @@ function entryKey(q: StaticEntry): string {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
-    case "image-quiz":
       return q.prompt;
     case "prediction":
       return `${q.scenario} ${q.prompt}`;

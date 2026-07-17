@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ArrowClockwiseIcon,
+  ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
+  CloudSlashIcon,
   FireIcon,
   FlagCheckeredIcon,
   GraduationCapIcon,
@@ -26,7 +29,6 @@ import { SPORTS, type Difficulty, type Question, type QuizType, type Sport } fro
 import {
   GuessPlayer,
   GuessScore,
-  ImageQuiz,
   MultipleChoice,
   Prediction,
   Timeline,
@@ -34,7 +36,7 @@ import {
   type AnswerResult,
 } from "./QuestionRenderers";
 
-type Phase = "pick-category" | "loading" | "question" | "finished";
+type Phase = "pick-category" | "loading" | "question" | "finished" | "daily-error";
 
 interface RoundRecord {
   sport: Sport;
@@ -99,7 +101,6 @@ function questionKey(q: Question): string {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
-    case "image-quiz":
       return q.prompt;
     case "prediction":
       return `${q.scenario} ${q.prompt}`;
@@ -155,41 +156,56 @@ export default function QuizGame({
     setCategories(randomThreeSports(favorite));
   }, [favorite]);
 
+  const loadDaily = useCallback(async (signal?: { cancelled: boolean }) => {
+    setPhase("loading");
+    setError(null);
+    try {
+      const res = await fetch("/api/daily");
+      if (!res.ok) {
+        throw new Error(
+          res.status >= 500
+            ? "The server had a problem building today's questions. This is usually temporary."
+            : `The daily challenge request failed (error ${res.status}).`
+        );
+      }
+      const data = (await res.json()) as {
+        questions: Question[];
+        difficulty: Difficulty;
+        alreadyPlayed?: boolean;
+      };
+      if (signal?.cancelled) return;
+      setDailyPack(data.questions);
+      setDifficulty(data.difficulty);
+      const first = data.questions[0];
+      if (first) {
+        setQuestion(first);
+        shownAtRef.current = Date.now();
+        setPhase("question");
+      } else {
+        setError("No questions are available for today's challenge yet. Check back in a little while.");
+        setPhase("daily-error");
+      }
+    } catch (e) {
+      if (signal?.cancelled) return;
+      setError(
+        e instanceof TypeError
+          ? "We couldn't reach the server. Check your internet connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Something unexpected went wrong while loading the daily challenge."
+      );
+      setPhase("daily-error");
+    }
+  }, []);
+
   useEffect(() => {
     if (!isDaily) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/daily");
-        if (!res.ok) throw new Error("Could not load daily challenge");
-        const data = (await res.json()) as {
-          questions: Question[];
-          difficulty: Difficulty;
-          alreadyPlayed?: boolean;
-        };
-        if (cancelled) return;
-        setDailyPack(data.questions);
-        setDifficulty(data.difficulty);
-        const first = data.questions[0];
-        if (first) {
-          setQuestion(first);
-          shownAtRef.current = Date.now();
-          setPhase("question");
-        } else {
-          setError("No daily questions available");
-          setPhase("pick-category");
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Daily challenge failed");
-          setPhase("pick-category");
-        }
-      }
-    })();
+    const signal = { cancelled: false };
+    loadDaily(signal);
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
     };
-  }, [isDaily]);
+  }, [isDaily, loadDaily]);
 
   const basePoints = DIFFICULTY_META[difficulty].points;
   const streakBonus = Math.min(streak, 5) * 0.1;
@@ -410,11 +426,23 @@ export default function QuizGame({
     <main className="relative z-10 flex flex-1 flex-col px-4 py-6 sm:px-6">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6">
         {/* HUD */}
-        <div className="hud-glass sticky top-4 z-20 flex items-center justify-between rounded-2xl px-5 py-3 text-sm">
-          <Link href="/" className="focus-ring flex items-center gap-2 rounded-lg font-display font-semibold text-paper transition-colors hover:text-accent">
-            <TrophyIcon size={16} weight="fill" className="text-brand" />
-            SportIQ
-          </Link>
+        <div className="hud-glass sticky top-4 z-20 flex items-center justify-between rounded-2xl px-3 py-3 text-sm sm:px-5">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              aria-label="Back to home"
+              className="pressable focus-ring flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-mute transition-colors hover:border-accent/40 hover:text-accent"
+            >
+              <ArrowLeftIcon size={15} weight="bold" />
+            </Link>
+            <Link
+              href="/"
+              className="focus-ring hidden items-center gap-2 rounded-lg font-display font-semibold text-paper transition-colors hover:text-accent sm:flex"
+            >
+              <TrophyIcon size={16} weight="fill" className="text-brand" />
+              SportIQ
+            </Link>
+          </div>
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden text-mute sm:inline">
               {endless
@@ -451,6 +479,38 @@ export default function QuizGame({
             </Link>
           </div>
         </div>
+
+        {/* Daily challenge failed to load */}
+        {phase === "daily-error" && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center animate-rise">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-hard/10 text-hard">
+              <CloudSlashIcon size={32} weight="duotone" />
+            </span>
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-paper">
+                Daily challenge couldn&apos;t start
+              </h2>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-mute">
+                {error ?? "Something unexpected went wrong while loading today's questions."}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={() => loadDaily()}
+                className="brand-shimmer pressable focus-ring inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-accent-ink"
+              >
+                <ArrowClockwiseIcon size={16} weight="bold" />
+                Start over
+              </button>
+              <Link
+                href="/"
+                className="pressable focus-ring inline-flex items-center gap-2 rounded-full border border-border bg-surface px-6 py-3 text-sm font-semibold text-paper"
+              >
+                Back to home
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Category pick */}
         {phase === "pick-category" && (
@@ -566,9 +626,6 @@ export default function QuizGame({
               )}
               {question.quizType === "timeline" && (
                 <Timeline question={question} onAnswer={handleAnswer} />
-              )}
-              {question.quizType === "image-quiz" && (
-                <ImageQuiz question={question} onAnswer={handleAnswer} />
               )}
               {question.quizType === "prediction" && (
                 <Prediction question={question} onAnswer={handleAnswer} />

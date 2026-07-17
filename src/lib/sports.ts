@@ -11,7 +11,6 @@ import {
   HandFistIcon,
   HashIcon,
   HockeyIcon,
-  ImageIcon,
   ListChecksIcon,
   ScalesIcon,
   SkullIcon,
@@ -26,20 +25,20 @@ export interface SportMeta {
   id: Sport;
   label: string;
   icon: Icon;
-  /** Soft-palette per-sport identity color. */
+  /** Per-sport identity color: saturated, used only on small icons. */
   color: string;
 }
 
 export const SPORT_META: Record<Sport, SportMeta> = {
-  football: { id: "football", label: "Football", icon: SoccerBallIcon, color: "#9BE7C4" },
-  basketball: { id: "basketball", label: "Basketball", icon: BasketballIcon, color: "#FFBFA3" },
-  tennis: { id: "tennis", label: "Tennis", icon: TennisBallIcon, color: "#A8E6A3" },
-  baseball: { id: "baseball", label: "Baseball", icon: BaseballIcon, color: "#FF9E9E" },
-  hockey: { id: "hockey", label: "Ice Hockey", icon: HockeyIcon, color: "#7CC6FE" },
-  cricket: { id: "cricket", label: "Cricket", icon: CricketIcon, color: "#7DD3C0" },
-  formula1: { id: "formula1", label: "Formula 1", icon: SteeringWheelIcon, color: "#FFE599" },
-  mma: { id: "mma", label: "MMA", icon: HandFistIcon, color: "#CDB4FF" },
-  esports: { id: "esports", label: "Esports", icon: GameControllerIcon, color: "#E8A0D0" },
+  football: { id: "football", label: "Football", icon: SoccerBallIcon, color: "#0f9152" },
+  basketball: { id: "basketball", label: "Basketball", icon: BasketballIcon, color: "#e06a13" },
+  tennis: { id: "tennis", label: "Tennis", icon: TennisBallIcon, color: "#84a80b" },
+  baseball: { id: "baseball", label: "Baseball", icon: BaseballIcon, color: "#d33d4e" },
+  hockey: { id: "hockey", label: "Ice Hockey", icon: HockeyIcon, color: "#0284c7" },
+  cricket: { id: "cricket", label: "Cricket", icon: CricketIcon, color: "#0d9488" },
+  formula1: { id: "formula1", label: "Formula 1", icon: SteeringWheelIcon, color: "#c07207" },
+  mma: { id: "mma", label: "MMA", icon: HandFistIcon, color: "#7c3aed" },
+  esports: { id: "esports", label: "Esports", icon: GameControllerIcon, color: "#d6357f" },
 };
 
 export const DIFFICULTY_META: Record<
@@ -57,7 +56,7 @@ export const DIFFICULTY_META: Record<
   medium: {
     label: "Medium",
     points: 200,
-    color: "var(--color-peach)",
+    color: "var(--color-medium)",
     description: "For fans who follow the game closely",
     icon: FlameIcon,
     intensity: 2,
@@ -72,12 +71,12 @@ export const DIFFICULTY_META: Record<
   },
 };
 
+/** Format icons stay one color (accent) — the format is a label, not a category. */
 export const QUIZ_TYPE_META: Record<QuizType, { label: string; icon: Icon; color: string }> = {
-  "multiple-choice": { label: "Multiple Choice", icon: ListChecksIcon, color: "#7CC6FE" },
-  "true-false": { label: "True / False", icon: ScalesIcon, color: "#9BE7C4" },
-  "guess-score": { label: "Guess the Score", icon: HashIcon, color: "#FFBFA3" },
-  "guess-player": { label: "Guess the Player", icon: DetectiveIcon, color: "#CDB4FF" },
-  timeline: { label: "Timeline", icon: ClockCounterClockwiseIcon, color: "#FFE599" },
-  "image-quiz": { label: "Image Quiz", icon: ImageIcon, color: "#A8E6A3" },
-  prediction: { label: "Prediction", icon: CompassIcon, color: "#FF9E9E" },
+  "multiple-choice": { label: "Multiple Choice", icon: ListChecksIcon, color: "var(--color-accent)" },
+  "true-false": { label: "True / False", icon: ScalesIcon, color: "var(--color-accent)" },
+  "guess-score": { label: "Guess the Score", icon: HashIcon, color: "var(--color-accent)" },
+  "guess-player": { label: "Guess the Player", icon: DetectiveIcon, color: "var(--color-accent)" },
+  timeline: { label: "Timeline", icon: ClockCounterClockwiseIcon, color: "var(--color-accent)" },
+  prediction: { label: "Prediction", icon: CompassIcon, color: "var(--color-accent)" },
 };

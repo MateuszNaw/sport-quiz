@@ -173,28 +173,28 @@ export default function ProfilePage() {
             label="Games played"
             value={String(user.stats.gamesPlayed)}
             delay={0}
-            tone="#7CC6FE"
+            tone="#2563eb"
           />
           <StatCard
             icon={<PercentIcon size={18} weight="bold" />}
             label="Accuracy"
             value={`${accuracy}%`}
             delay={45}
-            tone="#9BE7C4"
+            tone="#0f9152"
           />
           <StatCard
             icon={<FireIcon size={18} weight="fill" />}
             label="Best answer streak"
             value={String(user.stats.bestAnswerStreak)}
             delay={90}
-            tone="#FFBFA3"
+            tone="#e06a13"
           />
           <StatCard
             icon={<CalendarCheckIcon size={18} weight="bold" />}
             label="Day streak"
             value={String(user.stats.dayStreak)}
             delay={135}
-            tone="#CDB4FF"
+            tone="#7c3aed"
           />
         </section>
 
