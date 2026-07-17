@@ -71,11 +71,11 @@ export default function FirstVisitIntro() {
           className="w-64 sm:w-80"
         />
       </div>
-      <p className="intro-tag relative z-10 max-w-sm text-base font-semibold text-white/90 sm:text-lg">
-        Welcome to <span className="font-display">SportIQ</span> — trivia built on
+      <p className="intro-tag relative z-10 max-w-sm text-base font-semibold text-paper sm:text-lg">
+        Welcome to <span className="font-display text-brand">SportIQ</span> — trivia built on
         Sportradar-grade sports data.
       </p>
-      <p className="intro-hint relative z-10 text-xs uppercase tracking-[0.25em] text-white/50">
+      <p className="intro-hint relative z-10 text-xs uppercase tracking-[0.25em] text-mute">
         Tap anywhere to start
       </p>
     </div>

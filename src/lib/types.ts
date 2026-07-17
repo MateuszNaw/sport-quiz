@@ -21,6 +21,8 @@ export const QUIZ_TYPES = [
   "guess-score",
   "guess-player",
   "timeline",
+  "image-quiz",
+  "prediction",
 ] as const;
 export type QuizType = (typeof QUIZ_TYPES)[number];
 
@@ -73,12 +75,34 @@ export interface TimelineQuestion extends QuestionBase {
   events: string[];
 }
 
+export interface ImageQuizQuestion extends QuestionBase {
+  quizType: "image-quiz";
+  prompt: string;
+  /** Public URL or path under /public. */
+  imageUrl: string;
+  /** Short caption under the image (optional). */
+  imageCaption?: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface PredictionQuestion extends QuestionBase {
+  quizType: "prediction";
+  /** Setup / situation the player must read. */
+  scenario: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+}
+
 export type Question =
   | MultipleChoiceQuestion
   | TrueFalseQuestion
   | GuessScoreQuestion
   | GuessPlayerQuestion
-  | TimelineQuestion;
+  | TimelineQuestion
+  | ImageQuizQuestion
+  | PredictionQuestion;
 
 export interface GenerateQuestionRequest {
   sport: Sport;
@@ -86,4 +110,6 @@ export interface GenerateQuestionRequest {
   quizType?: QuizType;
   /** Prompts of recently asked questions, so the generator avoids repeats. */
   exclude?: string[];
+  /** Prefer this sport more often (favorites personalization). */
+  preferSport?: Sport;
 }

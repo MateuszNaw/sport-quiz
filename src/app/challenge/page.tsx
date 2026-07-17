@@ -25,7 +25,7 @@ export default async function ChallengePage({
   return (
     <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-16">
       <div className="surface w-full max-w-md rounded-3xl p-8 text-center animate-rise">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-lavender/20 text-lavender">
           <SwordIcon size={28} weight="fill" />
         </div>
         <p className="text-sm font-semibold uppercase tracking-[0.14em] text-mute">You&apos;ve been challenged</p>

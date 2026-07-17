@@ -24,23 +24,68 @@ function StatCard({
   label,
   value,
   delay,
+  tone,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   delay: number;
+  tone: string;
 }) {
   return (
     <div
       className="stagger-item flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-mute">
+      <span
+        className="flex h-9 w-9 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `color-mix(in srgb, ${tone} 22%, transparent)`, color: tone }}
+      >
         {icon}
       </span>
       <span className="font-display text-2xl font-semibold text-paper">{value}</span>
       <span className="text-xs font-medium text-mute">{label}</span>
     </div>
+  );
+}
+
+function ChallengesSection() {
+  const [rows, setRows] = useState<
+    { id: string; fromUsername: string; toUsername: string; challengeScore: number; attemptScore: number; won: boolean; date: string }[]
+  >([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/challenges");
+        if (!res.ok) return;
+        const data = (await res.json()) as { challenges: typeof rows };
+        setRows(data.challenges ?? []);
+      } catch {
+        // ignore
+      }
+    })();
+  }, []);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <section className="animate-rise" style={{ animationDelay: "0.1s" }}>
+      <h2 className="mb-4 text-lg font-semibold text-paper">Recent challenges</h2>
+      <div className="surface flex flex-col divide-y divide-border rounded-2xl">
+        {rows.slice(0, 8).map((c) => (
+          <div key={c.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm">
+            <span className="text-mute">
+              vs <span className="font-semibold text-paper">{c.fromUsername}</span> (
+              {c.challengeScore.toLocaleString()} pts)
+            </span>
+            <span className={`font-semibold ${c.won ? "text-easy" : "text-hard"}`}>
+              {c.won ? "Won" : "Lost"} · {c.attemptScore.toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -116,7 +161,9 @@ export default function ProfilePage() {
           </span>
           <div>
             <h1 className="font-display text-2xl font-semibold text-paper sm:text-3xl">{user.username}</h1>
-            <p className="text-sm text-mute">Playing SportIQ since {joined}</p>
+            <p className="text-sm text-mute">
+              Level {user.level} · {user.stats.xp.toLocaleString()} XP · Playing since {joined}
+            </p>
           </div>
         </header>
 
@@ -126,29 +173,36 @@ export default function ProfilePage() {
             label="Games played"
             value={String(user.stats.gamesPlayed)}
             delay={0}
+            tone="#7CC6FE"
           />
           <StatCard
             icon={<PercentIcon size={18} weight="bold" />}
             label="Accuracy"
             value={`${accuracy}%`}
             delay={45}
+            tone="#9BE7C4"
           />
           <StatCard
             icon={<FireIcon size={18} weight="fill" />}
             label="Best answer streak"
             value={String(user.stats.bestAnswerStreak)}
             delay={90}
+            tone="#FFBFA3"
           />
           <StatCard
             icon={<CalendarCheckIcon size={18} weight="bold" />}
             label="Day streak"
             value={String(user.stats.dayStreak)}
             delay={135}
+            tone="#CDB4FF"
           />
         </section>
 
         <section className="animate-rise" style={{ animationDelay: "0.08s" }}>
           <h2 className="mb-4 text-lg font-semibold text-paper">Your favorites</h2>
+          <p className="mb-3 text-sm text-mute">
+            Favorite sport is weighted when drawing categories each round.
+          </p>
           <form onSubmit={saveFavorites} className="surface-cream grid gap-4 rounded-3xl p-5 sm:grid-cols-3 sm:p-6">
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="font-medium text-paper">Favorite sport</span>
@@ -201,6 +255,8 @@ export default function ProfilePage() {
           </form>
         </section>
 
+        <ChallengesSection />
+
         <section className="animate-rise" style={{ animationDelay: "0.12s" }}>
           <h2 className="mb-4 flex items-center justify-between text-lg font-semibold text-paper">
             Achievements
@@ -222,8 +278,16 @@ export default function ProfilePage() {
                 >
                   <span
                     className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                      unlocked ? "bg-easy text-accent-ink" : "bg-surface-2 text-faint"
+                      unlocked ? "" : "bg-surface-2 text-faint"
                     }`}
+                    style={
+                      unlocked
+                        ? {
+                            backgroundColor: `color-mix(in srgb, ${a.color} 28%, transparent)`,
+                            color: a.color,
+                          }
+                        : undefined
+                    }
                   >
                     {unlocked ? <AchievementIcon size={20} weight="fill" /> : <LockSimpleIcon size={18} />}
                   </span>
@@ -286,7 +350,7 @@ export default function ProfilePage() {
             href="/leagues"
             className="brand-shimmer pressable focus-ring inline-flex items-center gap-1.5 rounded-2xl px-6 py-3 text-sm font-bold text-accent-ink"
           >
-            <MedalIcon size={16} weight="fill" />
+            <MedalIcon size={16} weight="fill" className="text-lavender" />
             View your leagues
             <ArrowRightIcon size={14} weight="bold" />
           </Link>
@@ -294,7 +358,7 @@ export default function ProfilePage() {
             href="/"
             className="pressable focus-ring inline-flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/40"
           >
-            <ShieldCheckIcon size={16} className="text-mute" />
+            <ShieldCheckIcon size={16} className="text-mint" />
             Play another round
           </Link>
         </div>

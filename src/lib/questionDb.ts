@@ -29,7 +29,10 @@ export function questionExcludeKey(q: Question): string {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
+    case "image-quiz":
       return q.prompt.toLowerCase();
+    case "prediction":
+      return `${q.scenario} ${q.prompt}`.toLowerCase();
     case "true-false":
       return q.statement.toLowerCase();
     case "guess-score":

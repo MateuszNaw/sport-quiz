@@ -18,17 +18,24 @@ export default function SiteNav() {
     <div className="relative z-20 mx-auto flex w-full max-w-4xl items-center justify-between px-6 pt-6 sm:px-8">
       <Link
         href="/"
-        className="pressable focus-ring flex items-center gap-2 rounded-lg font-display text-base font-semibold text-brand"
+        className="pressable focus-ring flex items-center gap-2 rounded-lg font-display text-base font-semibold text-paper"
       >
         <TrophyIcon size={18} weight="fill" className="text-brand" />
         SportIQ
       </Link>
       <div className="flex items-center gap-2.5">
         <Link
+          href="/leaderboard"
+          className="pressable focus-ring hidden items-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/50 sm:inline-flex"
+        >
+          <TrophyIcon size={15} weight="fill" className="text-peach" />
+          Board
+        </Link>
+        <Link
           href="/leagues"
           className="pressable focus-ring hidden items-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/50 sm:inline-flex"
         >
-          <UsersThreeIcon size={15} className="text-mute" />
+          <UsersThreeIcon size={15} weight="fill" className="text-lavender" />
           Leagues
         </Link>
         <AccountMenu />

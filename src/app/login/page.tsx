@@ -45,8 +45,8 @@ function LoginForm() {
     <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm animate-rise">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-            {mode === "login" ? <SignInIcon size={26} weight="bold" /> : <UserPlusIcon size={26} weight="bold" />}
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/15 text-brand">
+            {mode === "login" ? <SignInIcon size={26} weight="bold" /> : <UserPlusIcon size={26} weight="bold" className="text-mint" />}
           </div>
           <h1 className="font-display text-2xl font-semibold text-paper">
             {mode === "login" ? "Welcome back" : "Create your account"}
@@ -88,7 +88,7 @@ function LoginForm() {
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-paper">Password</span>
             <div className="relative">
-              <LockKeyIcon size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-faint" />
+              <LockKeyIcon size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-peach" />
               <input
                 type="password"
                 value={password}

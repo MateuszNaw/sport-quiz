@@ -23,7 +23,10 @@ function excludeKey(q) {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
+    case "image-quiz":
       return String(q.prompt || "").toLowerCase();
+    case "prediction":
+      return `${q.scenario || ""} ${q.prompt || ""}`.toLowerCase();
     case "true-false":
       return String(q.statement || "").toLowerCase();
     case "guess-score":
@@ -46,6 +49,28 @@ async function main() {
   for (const file of files) {
     const match = file.match(/^([a-z0-9]+)-(easy|medium|hard)\.json$/i);
     if (!match) {
+      if (file === "special-formats.json") {
+        const raw = JSON.parse(await readFile(path.join(QUESTIONS_DIR, file), "utf-8"));
+        const sports = ["football", "basketball", "tennis", "formula1", "mma", "hockey", "cricket", "baseball", "esports"];
+        const diffs = ["easy", "medium", "hard"];
+        let i = 0;
+        for (const entry of raw) {
+          const sport = sports[i % sports.length];
+          const difficulty = diffs[i % diffs.length];
+          const key = excludeKey(entry);
+          docs.push({
+            _id: docId(sport, difficulty, key),
+            sport,
+            difficulty,
+            quizType: entry.quizType,
+            excludeKey: key,
+            body: { ...entry, sport, difficulty },
+          });
+          i += 1;
+        }
+        console.log(`  ${file}: ${raw.length} questions`);
+        continue;
+      }
       console.warn(`Skipping unexpected file: ${file}`);
       continue;
     }

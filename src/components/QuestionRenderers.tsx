@@ -11,7 +11,9 @@ import {
 import type {
   GuessPlayerQuestion,
   GuessScoreQuestion,
+  ImageQuizQuestion,
   MultipleChoiceQuestion,
+  PredictionQuestion,
   TimelineQuestion,
   TrueFalseQuestion,
 } from "@/lib/types";
@@ -23,6 +25,7 @@ export interface AnswerResult {
   credit: number;
   /** Human-readable description of what the user answered. */
   userAnswer: string;
+  hintUsed?: boolean;
 }
 
 const optionBase =
@@ -36,20 +39,37 @@ const optionDim = "border-border-soft bg-surface text-faint";
 export function MultipleChoice({
   question,
   onAnswer,
+  allowHint = true,
 }: {
   question: MultipleChoiceQuestion;
   onAnswer: (r: AnswerResult) => void;
+  allowHint?: boolean;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
+  const [hidden, setHidden] = useState<number[]>([]);
+  const [hintUsed, setHintUsed] = useState(false);
   const answered = picked !== null;
 
+  function useFiftyFifty() {
+    if (answered || hintUsed) return;
+    const wrong = question.options
+      .map((_, i) => i)
+      .filter((i) => i !== question.correctIndex);
+    const shuffle = [...wrong].sort(() => Math.random() - 0.5);
+    setHidden(shuffle.slice(0, 2));
+    setHintUsed(true);
+  }
+
   function pick(i: number) {
-    if (answered) return;
+    if (answered || hidden.includes(i)) return;
     setPicked(i);
+    const correct = i === question.correctIndex;
+    const credit = correct ? (hintUsed ? 0.75 : 1) : 0;
     onAnswer({
-      correct: i === question.correctIndex,
-      credit: i === question.correctIndex ? 1 : 0,
+      correct,
+      credit,
       userAnswer: question.options[i],
+      hintUsed,
     });
   }
 
@@ -58,8 +78,28 @@ export function MultipleChoice({
       <h2 className="font-display text-xl font-semibold text-paper sm:text-2xl">
         {question.prompt}
       </h2>
+      {allowHint && !answered && (
+        <button
+          type="button"
+          onClick={useFiftyFifty}
+          disabled={hintUsed}
+          className="pressable focus-ring inline-flex items-center gap-1.5 self-start rounded-2xl border border-border px-3.5 py-2 text-xs font-semibold text-mute transition-colors hover:bg-surface-2 disabled:opacity-40"
+        >
+          50/50 hint (−25% if correct)
+        </button>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         {question.options.map((opt, i) => {
+          if (hidden.includes(i) && !answered) {
+            return (
+              <div key={i} className={`${optionBase} ${optionDim} opacity-40 line-through`}>
+                <span className="mr-2 font-mono font-bold text-faint">
+                  {String.fromCharCode(65 + i)}
+                </span>
+                {opt}
+              </div>
+            );
+          }
           let cls = optionIdle;
           if (answered) {
             if (i === question.correctIndex) cls = optionCorrect;
@@ -404,6 +444,130 @@ export function Timeline({
       <p className="text-center text-xs text-faint">
         Partial credit for each event in the right position
       </p>
+    </div>
+  );
+}
+
+export function ImageQuiz({
+  question,
+  onAnswer,
+}: {
+  question: ImageQuizQuestion;
+  onAnswer: (r: AnswerResult) => void;
+}) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const [imgFailed, setImgFailed] = useState(false);
+  const answered = picked !== null;
+
+  function pick(i: number) {
+    if (answered) return;
+    setPicked(i);
+    onAnswer({
+      correct: i === question.correctIndex,
+      credit: i === question.correctIndex ? 1 : 0,
+      userAnswer: question.options[i],
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <h2 className="font-display text-xl font-semibold text-paper sm:text-2xl">{question.prompt}</h2>
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface-2">
+        {!imgFailed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={question.imageUrl}
+            alt={question.imageCaption ?? "Quiz subject"}
+            className="mx-auto max-h-72 w-full object-cover"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="flex h-48 items-center justify-center bg-brand/10 font-display text-4xl font-bold text-brand">
+            ?
+          </div>
+        )}
+        {question.imageCaption && (
+          <p className="border-t border-border-soft px-4 py-2 text-center text-xs text-mute">
+            {question.imageCaption}
+          </p>
+        )}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {question.options.map((opt, i) => {
+          let cls = optionIdle;
+          if (answered) {
+            if (i === question.correctIndex) cls = optionCorrect;
+            else if (i === picked) cls = optionWrong;
+            else cls = optionDim;
+          }
+          return (
+            <button
+              key={i}
+              disabled={answered}
+              onClick={() => pick(i)}
+              className={`focus-ring ${optionBase} ${cls}`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function Prediction({
+  question,
+  onAnswer,
+}: {
+  question: PredictionQuestion;
+  onAnswer: (r: AnswerResult) => void;
+}) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const answered = picked !== null;
+
+  function pick(i: number) {
+    if (answered) return;
+    setPicked(i);
+    onAnswer({
+      correct: i === question.correctIndex,
+      credit: i === question.correctIndex ? 1 : 0,
+      userAnswer: question.options[i],
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <p className="mb-1 text-sm font-medium text-peach">What happens next?</p>
+        <p className="rounded-2xl border border-border bg-surface-2 px-4 py-3 text-sm leading-relaxed text-mute">
+          {question.scenario}
+        </p>
+      </div>
+      <h2 className="font-display text-xl font-semibold text-paper sm:text-2xl">{question.prompt}</h2>
+      <div className="grid gap-3">
+        {question.options.map((opt, i) => {
+          let cls = optionIdle;
+          if (answered) {
+            if (i === question.correctIndex) cls = optionCorrect;
+            else if (i === picked) cls = optionWrong;
+            else cls = optionDim;
+          }
+          return (
+            <button
+              key={i}
+              disabled={answered}
+              onClick={() => pick(i)}
+              className={`focus-ring ${optionBase} ${cls}`}
+            >
+              <span className="mr-2 font-mono font-bold text-faint">
+                {String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

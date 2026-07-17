@@ -36,6 +36,7 @@ export default function LeagueDetailPage() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [lastResult, setLastResult] = useState<LastResult | null>(null);
+  const [boardPeriod, setBoardPeriod] = useState<"week" | "all">("week");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/leagues/${code}`);
@@ -68,7 +69,10 @@ export default function LeagueDetailPage() {
     }
   }, []);
 
-  const leaderboard = useMemo(() => (league ? computeLeaderboard(league) : []), [league]);
+  const leaderboard = useMemo(
+    () => (league ? computeLeaderboard(league, boardPeriod) : []),
+    [league, boardPeriod]
+  );
   const isMember = league && user ? league.members.includes(user.username) : false;
 
   async function join() {
@@ -166,7 +170,7 @@ export default function LeagueDetailPage() {
 
         <header className="animate-rise">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-mute">
-            <UsersThreeIcon size={14} weight="fill" className="text-accent" />
+            <UsersThreeIcon size={14} weight="fill" className="text-lavender" />
             {league.members.length} member{league.members.length === 1 ? "" : "s"}
           </div>
           <h1 className="font-display text-3xl font-semibold text-paper">{league.name}</h1>
@@ -216,7 +220,28 @@ export default function LeagueDetailPage() {
 
         {/* Leaderboard */}
         <section className="animate-rise" style={{ animationDelay: "0.1s" }}>
-          <h2 className="mb-4 text-lg font-semibold text-paper">Leaderboard</h2>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-paper">Leaderboard</h2>
+            <div className="flex gap-2">
+              {(
+                [
+                  ["week", "This week"],
+                  ["all", "All time"],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setBoardPeriod(id)}
+                  className={`pressable focus-ring rounded-xl px-3 py-1.5 text-xs font-semibold ${
+                    boardPeriod === id ? "bg-brand text-accent-ink" : "border border-border bg-surface text-mute"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="surface flex flex-col divide-y divide-border rounded-2xl">
             {leaderboard.map((row, i) => {
               const reactionCounts = REACTIONS.map((emoji) => ({
@@ -266,7 +291,7 @@ export default function LeagueDetailPage() {
         {/* Comments */}
         <section className="animate-rise" style={{ animationDelay: "0.15s" }}>
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-paper">
-            <ChatCircleDotsIcon size={18} className="text-accent" />
+            <ChatCircleDotsIcon size={18} className="text-mint" />
             Comments
           </h2>
           <form onSubmit={submitComment} className="mb-4 flex gap-2">

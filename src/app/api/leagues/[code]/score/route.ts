@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { updateLeague } from "@/lib/store";
 import { DIFFICULTIES, type Difficulty } from "@/lib/types";
+import { isoWeekId } from "@/lib/week";
 
 export const runtime = "nodejs";
 
 /**
  * POST /api/leagues/[code]/score
  * Body: { score, difficulty }
- * Posts the signed-in user's latest quiz result to a league's leaderboard.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ code: string }> }) {
   const user = await getSessionUser();
@@ -28,13 +28,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
   }
 
   const { code } = await params;
+  const now = new Date().toISOString();
   const league = await updateLeague(code, (l) => {
     if (!l.members.includes(user.username)) l.members.push(user.username);
     l.scores.push({
       username: user.username,
       score: body.score as number,
       difficulty: body.difficulty as Difficulty,
-      date: new Date().toISOString(),
+      date: now,
+      weekId: isoWeekId(new Date(now)),
     });
   });
   if (!league) {

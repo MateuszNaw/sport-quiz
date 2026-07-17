@@ -81,7 +81,7 @@ export default function LeaguesPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         <header className="animate-rise">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-mute">
-            <UsersThreeIcon size={14} weight="fill" className="text-accent" />
+            <UsersThreeIcon size={14} weight="fill" className="text-lavender" />
             Private leagues
           </div>
           <h1 className="font-display text-3xl font-semibold text-paper">Play together, climb together.</h1>
@@ -122,7 +122,7 @@ export default function LeaguesPage() {
               className="focus-ring inline-flex items-center justify-center gap-1.5 rounded-full border border-border bg-surface-2 px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:border-accent/40 disabled:opacity-50"
             >
               Join league
-              <ArrowRightIcon size={14} weight="bold" />
+              <ArrowRightIcon size={14} weight="bold" className="text-brand" />
             </button>
           </form>
         </section>
@@ -153,7 +153,7 @@ export default function LeaguesPage() {
                       {l.members.length} member{l.members.length === 1 ? "" : "s"} · code {l.code}
                     </p>
                   </div>
-                  <ArrowRightIcon size={16} weight="bold" className="text-accent" />
+                  <ArrowRightIcon size={16} weight="bold" className="text-peach" />
                 </Link>
               ))}
             </div>

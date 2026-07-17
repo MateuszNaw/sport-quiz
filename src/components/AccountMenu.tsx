@@ -34,7 +34,7 @@ export default function AccountMenu() {
         href="/login"
         className="pressable focus-ring inline-flex items-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/50"
       >
-        <SignInIcon size={15} />
+        <SignInIcon size={15} className="text-brand" />
         Sign in
       </Link>
     );
@@ -46,7 +46,7 @@ export default function AccountMenu() {
         onClick={() => setOpen((o) => !o)}
         className="pressable focus-ring inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-paper transition-[border-color,background-color] duration-200 ease hover:bg-surface-2/50"
       >
-        <UserCircleIcon size={18} className="text-mute" />
+        <UserCircleIcon size={18} weight="fill" className="text-lavender" />
         {user.username}
         <CaretDownIcon
           size={12}
@@ -61,7 +61,7 @@ export default function AccountMenu() {
             onClick={() => setOpen(false)}
             className="focus-ring flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-paper transition-colors duration-150 ease hover:bg-surface-2/70"
           >
-            <UserCircleIcon size={16} className="text-mute" />
+            <UserCircleIcon size={16} weight="fill" className="text-lavender" />
             Profile
           </Link>
           <Link
@@ -69,7 +69,7 @@ export default function AccountMenu() {
             onClick={() => setOpen(false)}
             className="focus-ring flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-paper transition-colors duration-150 ease hover:bg-surface-2/70"
           >
-            <UsersThreeIcon size={16} className="text-mute" />
+            <UsersThreeIcon size={16} weight="fill" className="text-mint" />
             Leagues
           </Link>
           <button

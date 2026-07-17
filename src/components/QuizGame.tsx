@@ -26,7 +26,9 @@ import { SPORTS, type Difficulty, type Question, type QuizType, type Sport } fro
 import {
   GuessPlayer,
   GuessScore,
+  ImageQuiz,
   MultipleChoice,
+  Prediction,
   Timeline,
   TrueFalse,
   type AnswerResult,
@@ -40,6 +42,8 @@ interface RoundRecord {
   correct: boolean;
   credit: number;
   points: number;
+  speedBonus?: boolean;
+  hintUsed?: boolean;
 }
 
 interface UnlockedAchievement {
@@ -51,6 +55,8 @@ interface UnlockedAchievement {
 const LAST_RESULT_KEY = "sportiq:lastResult";
 const SEEN_STORAGE_KEY = "sportiq:seenQuestions";
 const MAX_LOCAL_SEEN = 500;
+const SPEED_MS = 12_000;
+const SPEED_BONUS_POINTS = 20;
 
 function loadLocalSeen(): string[] {
   try {
@@ -70,24 +76,33 @@ function rememberLocalSeen(key: string) {
     const next = [...new Set([...loadLocalSeen(), key.toLowerCase()])].slice(-MAX_LOCAL_SEEN);
     window.localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(next));
   } catch {
-    // ignore quota / private mode
+    // ignore
   }
 }
 
-function randomThreeSports(): Sport[] {
+function randomThreeSports(favorite?: Sport | null): Sport[] {
   const pool = [...SPORTS];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return pool.slice(0, 3);
+  let picked = pool.slice(0, 3);
+  if (favorite && SPORTS.includes(favorite) && !picked.includes(favorite)) {
+    picked = [favorite, ...picked.slice(0, 2)];
+  } else if (favorite && Math.random() < 0.55 && !picked.includes(favorite)) {
+    picked[2] = favorite;
+  }
+  return picked;
 }
 
 function questionKey(q: Question): string {
   switch (q.quizType) {
     case "multiple-choice":
     case "timeline":
+    case "image-quiz":
       return q.prompt;
+    case "prediction":
+      return `${q.scenario} ${q.prompt}`;
     case "true-false":
       return q.statement;
     case "guess-score":
@@ -98,24 +113,27 @@ function questionKey(q: Question): string {
 }
 
 export default function QuizGame({
-  difficulty,
+  difficulty: difficultyProp,
   length,
   challengeFrom,
   challengeScore,
+  mode = "standard",
 }: {
   difficulty: Difficulty;
   length: number; // 0 = endless
   challengeFrom?: string;
   challengeScore?: number;
+  mode?: "standard" | "daily" | "endless";
 }) {
   const { user, refresh } = useAuth();
-  const endless = length === 0;
-  const [phase, setPhase] = useState<Phase>("pick-category");
-  // Deterministic placeholder on first render (server and client must match);
-  // the real random pick happens client-side once mounted, see effect below.
+  const favorite = user?.profile.favoriteSport ?? null;
+  const endless = length === 0 || mode === "endless";
+  const isDaily = mode === "daily";
+  const [difficulty, setDifficulty] = useState<Difficulty>(difficultyProp);
+  const [phase, setPhase] = useState<Phase>(isDaily ? "loading" : "pick-category");
   const [categories, setCategories] = useState<Sport[]>(() => SPORTS.slice(0, 3));
   const [question, setQuestion] = useState<Question | null>(null);
-  const [result, setResult] = useState<(AnswerResult & { points: number }) | null>(null);
+  const [result, setResult] = useState<(AnswerResult & { points: number; speedBonus?: boolean }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
@@ -123,21 +141,55 @@ export default function QuizGame({
   const [history, setHistory] = useState<RoundRecord[]>([]);
   const [newlyUnlocked, setNewlyUnlocked] = useState<UnlockedAchievement[]>([]);
   const [shareStatus, setShareStatus] = useState<"idle" | "share-copied" | "challenge-copied">("idle");
+  const [dailyPack, setDailyPack] = useState<Question[] | null>(null);
   const askedRef = useRef<string[]>([]);
   const submittedRef = useRef(false);
+  const shownAtRef = useRef<number>(0);
 
   useEffect(() => {
-    // Seed session exclude with locally remembered questions (guests + signed-in
-    // backup). Server also excludes per-user seenQuestions when signed in.
     askedRef.current = loadLocalSeen();
   }, []);
 
   useEffect(() => {
-    // Randomize once on the client only; Math.random() during the initial
-    // render would mismatch between server and client HTML.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCategories(randomThreeSports());
-  }, []);
+    setCategories(randomThreeSports(favorite));
+  }, [favorite]);
+
+  useEffect(() => {
+    if (!isDaily) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/daily");
+        if (!res.ok) throw new Error("Could not load daily challenge");
+        const data = (await res.json()) as {
+          questions: Question[];
+          difficulty: Difficulty;
+          alreadyPlayed?: boolean;
+        };
+        if (cancelled) return;
+        setDailyPack(data.questions);
+        setDifficulty(data.difficulty);
+        const first = data.questions[0];
+        if (first) {
+          setQuestion(first);
+          shownAtRef.current = Date.now();
+          setPhase("question");
+        } else {
+          setError("No daily questions available");
+          setPhase("pick-category");
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Daily challenge failed");
+          setPhase("pick-category");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isDaily]);
 
   const basePoints = DIFFICULTY_META[difficulty].points;
   const streakBonus = Math.min(streak, 5) * 0.1;
@@ -151,7 +203,12 @@ export default function QuizGame({
         const res = await fetch("/api/question", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sport, difficulty, exclude: askedRef.current }),
+          body: JSON.stringify({
+            sport,
+            difficulty,
+            exclude: askedRef.current,
+            preferSport: favorite ?? undefined,
+          }),
         });
         if (!res.ok) {
           const body = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -162,26 +219,38 @@ export default function QuizGame({
         askedRef.current = [...new Set([...askedRef.current, key])].slice(-MAX_LOCAL_SEEN);
         rememberLocalSeen(key);
         setQuestion(data.question);
+        shownAtRef.current = Date.now();
         setPhase("question");
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong");
         setPhase("pick-category");
       }
     },
-    [difficulty]
+    [difficulty, favorite]
   );
 
   function handleAnswer(r: AnswerResult) {
     if (!question) return;
+    const elapsed = Date.now() - shownAtRef.current;
+    const speedBonus = r.correct && elapsed > 0 && elapsed <= SPEED_MS;
     const multiplier = 1 + (r.correct ? streakBonus : 0);
-    const points = Math.round(basePoints * r.credit * multiplier);
+    let points = Math.round(basePoints * r.credit * multiplier);
+    if (speedBonus) points += SPEED_BONUS_POINTS;
     setScore((s) => s + points);
     setStreak((s) => (r.correct ? s + 1 : 0));
     setHistory((h) => [
       ...h,
-      { sport: question.sport, quizType: question.quizType, correct: r.correct, credit: r.credit, points },
+      {
+        sport: question.sport,
+        quizType: question.quizType,
+        correct: r.correct,
+        credit: r.credit,
+        points,
+        speedBonus,
+        hintUsed: r.hintUsed,
+      },
     ]);
-    setResult({ ...r, points });
+    setResult({ ...r, points, speedBonus });
   }
 
   function finishNow() {
@@ -189,14 +258,28 @@ export default function QuizGame({
   }
 
   function nextRound() {
-    if (!endless && round >= length) {
+    if (!endless && round >= (isDaily ? (dailyPack?.length ?? length) : length)) {
       setPhase("finished");
       return;
     }
-    setRound((r) => r + 1);
+    const next = round + 1;
+    setRound(next);
     setQuestion(null);
     setResult(null);
-    setCategories(randomThreeSports());
+
+    if (isDaily && dailyPack) {
+      const q = dailyPack[next - 1];
+      if (!q || next > dailyPack.length) {
+        setPhase("finished");
+        return;
+      }
+      setQuestion(q);
+      shownAtRef.current = Date.now();
+      setPhase("question");
+      return;
+    }
+
+    setCategories(randomThreeSports(favorite));
     setPhase("pick-category");
   }
 
@@ -236,12 +319,18 @@ export default function QuizGame({
           body: JSON.stringify({
             difficulty,
             score,
+            mode: isDaily ? "daily" : endless ? "endless" : "standard",
             rounds: history.map((h) => ({
               sport: h.sport,
               quizType: h.quizType,
               correct: h.correct,
               credit: h.credit,
+              speedBonus: h.speedBonus,
+              hintUsed: h.hintUsed,
             })),
+            ...(challengeFrom && challengeScore !== undefined
+              ? { challenge: { fromUsername: challengeFrom, challengeScore } }
+              : {}),
           }),
         });
         if (!res.ok) return;
@@ -262,8 +351,15 @@ export default function QuizGame({
     setHistory([]);
     setNewlyUnlocked([]);
     submittedRef.current = false;
-    askedRef.current = [];
-    setCategories(randomThreeSports());
+    askedRef.current = loadLocalSeen();
+    if (isDaily && dailyPack?.[0]) {
+      setQuestion(dailyPack[0]);
+      shownAtRef.current = Date.now();
+      setResult(null);
+      setPhase("question");
+      return;
+    }
+    setCategories(randomThreeSports(favorite));
     setPhase("pick-category");
   }
 
@@ -316,18 +412,22 @@ export default function QuizGame({
         {/* HUD */}
         <div className="hud-glass sticky top-4 z-20 flex items-center justify-between rounded-2xl px-5 py-3 text-sm">
           <Link href="/" className="focus-ring flex items-center gap-2 rounded-lg font-display font-semibold text-paper transition-colors hover:text-accent">
-            <TrophyIcon size={16} weight="fill" className="text-accent" />
+            <TrophyIcon size={16} weight="fill" className="text-brand" />
             SportIQ
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden text-mute sm:inline">
-              {endless ? `Round ${round}` : `${Math.min(round, length)} / ${length}`}
+              {endless
+                ? `Round ${round}`
+                : `${Math.min(round, isDaily ? (dailyPack?.length ?? length) : length)} / ${
+                    isDaily ? (dailyPack?.length ?? length) : length
+                  }`}
             </span>
             <span className="font-semibold" style={{ color: DIFFICULTY_META[difficulty].color }}>
-              {DIFFICULTY_META[difficulty].label}
+              {isDaily ? "Daily" : DIFFICULTY_META[difficulty].label}
             </span>
             {streak >= 2 && (
-              <span className="flex items-center gap-1 font-semibold text-[#e8752e] animate-pop">
+              <span className="flex items-center gap-1 font-semibold text-peach animate-pop">
                 <FireIcon size={15} weight="fill" />
                 {streak}
               </span>
@@ -338,14 +438,14 @@ export default function QuizGame({
                 onClick={finishNow}
                 className="focus-ring hidden items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-semibold text-mute transition-colors hover:border-accent/40 hover:text-accent sm:inline-flex"
               >
-                <FlagCheckeredIcon size={13} />
+                <FlagCheckeredIcon size={13} className="text-mint" />
                 Finish
               </button>
             )}
             <Link
               href={user ? "/profile" : "/login"}
               aria-label={user ? "Your profile" : "Sign in"}
-              className="focus-ring text-mute transition-colors hover:text-accent"
+              className="focus-ring text-lavender transition-colors hover:text-accent"
             >
               {user ? <UserCircleIcon size={19} weight="fill" /> : <SignInIcon size={18} />}
             </Link>
@@ -435,13 +535,16 @@ export default function QuizGame({
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border-soft bg-surface-2 px-3 py-1">
                 {(() => {
-                  const TypeIcon = QUIZ_TYPE_META[question.quizType].icon;
-                  return <TypeIcon size={13} className="text-accent" />;
+                  const typeMeta = QUIZ_TYPE_META[question.quizType];
+                  const TypeIcon = typeMeta.icon;
+                  return (
+                    <TypeIcon size={13} weight="duotone" style={{ color: typeMeta.color }} />
+                  );
                 })()}
                 {QUIZ_TYPE_META[question.quizType].label}
               </span>
               {question.source === "ai" && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-accent">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-lavender/20 px-3 py-1 text-lavender">
                   <SparkleIcon size={13} weight="fill" />
                   AI generated
                 </span>
@@ -463,6 +566,12 @@ export default function QuizGame({
               )}
               {question.quizType === "timeline" && (
                 <Timeline question={question} onAnswer={handleAnswer} />
+              )}
+              {question.quizType === "image-quiz" && (
+                <ImageQuiz question={question} onAnswer={handleAnswer} />
+              )}
+              {question.quizType === "prediction" && (
+                <Prediction question={question} onAnswer={handleAnswer} />
               )}
             </div>
 
@@ -490,6 +599,9 @@ export default function QuizGame({
                   </span>
                   <span className={`font-mono font-bold ${result.points > 0 ? "text-accent" : "text-faint"}`}>
                     +{result.points}
+                    {result.speedBonus ? (
+                      <span className="ml-2 text-xs font-semibold text-peach">+{SPEED_BONUS_POINTS} speed</span>
+                    ) : null}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed text-mute">{question.explanation}</p>
@@ -499,7 +611,10 @@ export default function QuizGame({
                     onClick={nextRound}
                     className="brand-shimmer focus-ring inline-flex items-center gap-1.5 self-end rounded-full px-6 py-2.5 text-sm font-bold text-accent-ink transition-transform active:scale-[0.98]"
                   >
-                    {!endless && round >= length ? "See results" : "Next question"}
+                    {!endless &&
+                    round >= (isDaily ? (dailyPack?.length ?? length) : length)
+                      ? "See results"
+                      : "Next question"}
                     <ArrowRightIcon size={15} weight="bold" />
                   </button>
                 </div>
@@ -512,11 +627,11 @@ export default function QuizGame({
         {phase === "finished" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center animate-rise">
             {accuracy >= 0.7 ? (
-              <TrophyIcon size={56} weight="duotone" className="text-accent" />
+              <TrophyIcon size={56} weight="duotone" className="text-brand" />
             ) : accuracy >= 0.4 ? (
-              <MedalIcon size={56} weight="duotone" className="text-medium" />
+              <MedalIcon size={56} weight="duotone" className="text-peach" />
             ) : (
-              <GraduationCapIcon size={56} weight="duotone" className="text-mute" />
+              <GraduationCapIcon size={56} weight="duotone" className="text-lavender" />
             )}
             <div>
               <h2 className="font-display text-3xl font-semibold text-paper">Quiz complete</h2>
@@ -534,7 +649,7 @@ export default function QuizGame({
             {challengeFrom && challengeScore !== undefined && (
               <p
                 className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                  beatChallenge ? "bg-easy/10 text-easy" : "bg-medium/10 text-medium"
+                  beatChallenge ? "bg-easy/15 text-paper" : "bg-peach/20 text-paper"
                 }`}
               >
                 {beatChallenge
@@ -568,8 +683,12 @@ export default function QuizGame({
                     const full = ACHIEVEMENTS.find((x) => x.id === a.id);
                     const AchievementIcon = full?.icon ?? MedalIcon;
                     return (
-                      <div key={a.id} className="flex items-center gap-3 rounded-xl bg-accent/10 px-3 py-2.5 text-left">
-                        <AchievementIcon size={18} weight="fill" className="text-accent" />
+                      <div key={a.id} className="flex items-center gap-3 rounded-xl bg-mint/15 px-3 py-2.5 text-left">
+                        <AchievementIcon
+                          size={18}
+                          weight="fill"
+                          style={{ color: full?.color ?? "var(--color-brand)" }}
+                        />
                         <div>
                           <p className="text-sm font-semibold text-paper">{a.label}</p>
                           <p className="text-xs text-mute">{a.description}</p>
@@ -583,7 +702,7 @@ export default function QuizGame({
 
             {!user && (
               <p className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm text-mute">
-                <LockKeyIcon size={14} />
+                <LockKeyIcon size={14} className="text-peach" />
                 <Link href="/login" className="font-semibold text-accent hover:underline">
                   Sign in
                 </Link>{" "}
@@ -596,14 +715,14 @@ export default function QuizGame({
                 onClick={shareScore}
                 className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:border-accent/40"
               >
-                <ShareNetworkIcon size={15} />
+                <ShareNetworkIcon size={15} className="text-brand" />
                 {shareStatus === "share-copied" ? "Copied!" : "Share score"}
               </button>
               <button
                 onClick={challengeFriend}
                 className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:border-accent/40"
               >
-                <SwordIcon size={15} />
+                <SwordIcon size={15} className="text-lavender" />
                 {shareStatus === "challenge-copied" ? "Link copied!" : "Challenge a friend"}
               </button>
               {user && (
@@ -611,7 +730,7 @@ export default function QuizGame({
                   href="/leagues"
                   className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:border-accent/40"
                 >
-                  <MedalIcon size={15} />
+                  <MedalIcon size={15} className="text-peach" />
                   Post to a league
                 </Link>
               )}

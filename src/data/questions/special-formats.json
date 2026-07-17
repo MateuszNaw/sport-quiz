@@ -1,0 +1,178 @@
+[
+  {
+    "quizType": "image-quiz",
+    "prompt": "Who is this football legend?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Cristiano_Ronaldo_playing_for_Al_Nassr_FC_against_Persepolis%2C_September_2023_%28cropped%29.jpg/440px-Cristiano_Ronaldo_playing_for_Al_Nassr_FC_against_Persepolis%2C_September_2023_%28cropped%29.jpg",
+    "imageCaption": "Five-time Champions League winner",
+    "options": ["Lionel Messi", "Cristiano Ronaldo", "Zlatan Ibrahimović", "Karim Benzema"],
+    "correctIndex": 1,
+    "explanation": "Cristiano Ronaldo is one of football's all-time leading scorers and a five-time Ballon d'Or winner."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Which NBA icon is shown here?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Michael_Jordan_in_2014.jpg/440px-Michael_Jordan_in_2014.jpg",
+    "imageCaption": "Six-time NBA champion",
+    "options": ["Kobe Bryant", "LeBron James", "Michael Jordan", "Magic Johnson"],
+    "correctIndex": 2,
+    "explanation": "Michael Jordan led the Chicago Bulls to six NBA titles in the 1990s."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Name this tennis great.",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Serena_Williams_at_2013_US_Open.jpg/440px-Serena_Williams_at_2013_US_Open.jpg",
+    "imageCaption": "23 Grand Slam singles titles",
+    "options": ["Venus Williams", "Serena Williams", "Maria Sharapova", "Steffi Graf"],
+    "correctIndex": 1,
+    "explanation": "Serena Williams holds 23 major singles titles, the most in the Open Era."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Who is this Formula 1 champion?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Lewis_Hamilton_2016_Malaysia_2.jpg/440px-Lewis_Hamilton_2016_Malaysia_2.jpg",
+    "imageCaption": "Seven-time world champion",
+    "options": ["Max Verstappen", "Sebastian Vettel", "Lewis Hamilton", "Fernando Alonso"],
+    "correctIndex": 2,
+    "explanation": "Lewis Hamilton is a seven-time Formula One World Champion."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Which MMA star is pictured?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Conor_McGregor_UGC_94.jpg/440px-Conor_McGregor_UGC_94.jpg",
+    "imageCaption": "Former two-division UFC champion",
+    "options": ["Jon Jones", "Conor McGregor", "Khabib Nurmagomedov", "Israel Adesanya"],
+    "correctIndex": 1,
+    "explanation": "Conor McGregor was the first fighter to hold UFC titles in two divisions at once."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Who is this hockey legend?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Wayne_Gretzky_2006.jpg/440px-Wayne_Gretzky_2006.jpg",
+    "imageCaption": "The Great One",
+    "options": ["Mario Lemieux", "Wayne Gretzky", "Sidney Crosby", "Alex Ovechkin"],
+    "correctIndex": 1,
+    "explanation": "Wayne Gretzky holds the NHL career points record by a huge margin."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "A football team is 2-0 down at half-time in a cup final. Historically, comebacks of two goals in finals are rare but memorable.",
+    "prompt": "What usually happens next most often?",
+    "options": [
+      "The trailing team wins in normal time",
+      "The leading team still wins more often than not",
+      "The match always goes to penalties",
+      "The referee abandons the match"
+    ],
+    "correctIndex": 1,
+    "explanation": "A two-goal half-time lead is still usually enough — comebacks happen, but the team ahead wins most of the time."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "In a best-of-seven NBA series, a team takes a 3-1 lead.",
+    "prompt": "What is the most likely outcome from here?",
+    "options": [
+      "The trailing team wins the series more often",
+      "The team ahead closes it out more often than not",
+      "The series always goes to game 7",
+      "Both teams forfeit"
+    ],
+    "correctIndex": 1,
+    "explanation": "A 3-1 lead is a strong position; the leading side still closes most series."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "A Grand Slam tennis final is on serve at 5-5 in the fifth set.",
+    "prompt": "What tends to decide the match from here?",
+    "options": [
+      "Whoever holds serve through a tiebreak or breaks first",
+      "The player who won the toss always wins",
+      "The match is restarted from 0-0",
+      "The umpire picks a winner"
+    ],
+    "correctIndex": 0,
+    "explanation": "Late in a fifth set, a single break of serve or a tiebreak usually separates the champion."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "An F1 race starts under safety car after a wet opening lap.",
+    "prompt": "What is a common consequence?",
+    "options": [
+      "Pit strategy and tyre choices become even more decisive",
+      "The race is always cancelled",
+      "Overtaking is banned for the rest of the race",
+      "Drivers swap cars"
+    ],
+    "correctIndex": 0,
+    "explanation": "Wet starts and safety cars scramble tyre windows — strategy often decides the result."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "A UFC title fight goes to the judges after five close rounds.",
+    "prompt": "What decides the winner?",
+    "options": [
+      "The judges' scorecards",
+      "Fan vote on social media",
+      "Whoever weighed in lighter",
+      "A sudden-death sixth round always"
+    ],
+    "correctIndex": 0,
+    "explanation": "If neither fighter finishes the bout, the judges' scorecards determine the champion."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "A cricket chase needs 12 runs off the final over with 2 wickets in hand.",
+    "prompt": "What matters most in the next six balls?",
+    "options": [
+      "Dot balls and yorkers vs boundaries and cool heads",
+      "The coin toss from the morning",
+      "The colour of the kits",
+      "Whether the match is a Test or T20 only — nothing else"
+    ],
+    "correctIndex": 0,
+    "explanation": "Death bowling (yorkers, change-ups) versus clear striking usually decides last-over chases."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "An NHL playoff game is tied after 60 minutes.",
+    "prompt": "What happens next under modern rules?",
+    "options": [
+      "Sudden-death overtime (and eventually a shootout in some rounds/eras)",
+      "The team with more hits wins",
+      "Both teams get a point and leave",
+      "They replay the entire game next week"
+    ],
+    "correctIndex": 0,
+    "explanation": "Tied playoff hockey goes to overtime; regular season uses overtime then a shootout."
+  },
+  {
+    "quizType": "prediction",
+    "scenario": "A baseball team leads by one run with two outs and a runner on third in the 9th.",
+    "prompt": "What is the defence trying to force?",
+    "options": [
+      "Any out that ends the inning before the runner scores",
+      "An intentional walk to the pitcher only",
+      "A forfeit",
+      "Extra innings immediately"
+    ],
+    "correctIndex": 0,
+    "explanation": "With two outs, one more out ends the game — strikeout, groundout, or flyout all work if the run doesn't score first."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Who is this cricket icon?",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Sachin_Tendulkar_at_MRF_Promotion_Event.jpg/440px-Sachin_Tendulkar_at_MRF_Promotion_Event.jpg",
+    "imageCaption": "Little Master",
+    "options": ["Virat Kohli", "Sachin Tendulkar", "Ricky Ponting", "Brian Lara"],
+    "correctIndex": 1,
+    "explanation": "Sachin Tendulkar scored 100 international centuries across Tests and ODIs."
+  },
+  {
+    "quizType": "image-quiz",
+    "prompt": "Name this basketball superstar.",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/LeBron_James_%2851949977144%29_%28cropped%29.jpg/440px-LeBron_James_%2851949977144%29_%28cropped%29.jpg",
+    "imageCaption": "King James",
+    "options": ["Stephen Curry", "Kevin Durant", "LeBron James", "Giannis Antetokounmpo"],
+    "correctIndex": 2,
+    "explanation": "LeBron James is a four-time NBA champion and among the all-time scoring leaders."
+  }
+]
