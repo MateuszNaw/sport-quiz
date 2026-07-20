@@ -28,6 +28,9 @@ import hockeyMedium from "@/data/questions/hockey-medium.json";
 import hockeyHard from "@/data/questions/hockey-hard.json";
 import cricketEasy from "@/data/questions/cricket-easy.json";
 import cricketMedium from "@/data/questions/cricket-medium.json";
+import formula1Easy from "@/data/questions/formula1-easy.json";
+import formula1Medium from "@/data/questions/formula1-medium.json";
+import formula1Hard from "@/data/questions/formula1-hard.json";
 
 type Bucket = Partial<Record<Sport, Partial<Record<Difficulty, StaticEntry[]>>>>;
 
@@ -61,6 +64,11 @@ const STATIC_QUESTIONS: Bucket = {
     easy: cricketEasy as StaticEntry[],
     medium: cricketMedium as StaticEntry[],
     // no hard set yet — pickFromStatic falls back to easier difficulties, then null
+  },
+  formula1: {
+    easy: formula1Easy as StaticEntry[],
+    medium: formula1Medium as StaticEntry[],
+    hard: formula1Hard as StaticEntry[],
   },
 };
 
